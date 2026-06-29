@@ -23,9 +23,6 @@ What makes it look the way it does in the demos is entirely these programs worki
 9. [Wofi](./ui/wofi.md)
 10. [Neovim](./ui/nvim.md)
 
-> [!NOTE]
-> A top bar is basically redundant here. Starship already tells time. Event driven notifications surface critical system vitals (thermals, battery, etc).
-
 You may have seen me switch themes instantly, to get that, check the [flavors](./ui/flavors.md) docs.
 
 ## The rule

@@ -14,11 +14,11 @@
   - **Emulator:** Kitty `v0.41.1`.
   - **Multiplexer:** Tmux `v3.5a`.
   - **Shell:** Zsh `v5.9` + Starship `v1.23.0` + Lsd `v1.1.5`.
-- **Wallpaper(s):** By [artists](/packages/flavors/backgrounds/README.md).
+- **Wallpaper(s):** By these [artists](/packages/flavors/backgrounds/README.md).
 - **Notifications:** Mako `v1.10.0-1`.
-- **Fonts:** Inter (sans), Iosevka (mono), Meslo (NerdFonts fallback).
+- **Fonts:** Inter (sans), Iosevka (mono), Meslo (NerdFonts fallback), and Jakarta Sans for the login.
 - **Audio:** PipeWire `v1.4.2`.
 - **Clipboard:** Wofi `v1.4.1` (UI), custom backend.
-- **Login:** Thyx (custom theme)
-- **Power:** Powyx (custom menu)
+- **Login:** Thyx.
+- **Power:** Custom power menu.
 - **And more private utilities...**

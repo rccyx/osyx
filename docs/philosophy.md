@@ -30,11 +30,11 @@ A headless machine is the exact opposite. You boot into a bare text console, and
 
 The mental model is stability over novelty. But also composability.
 
-Built brick by brick on top of a raw Linux base, but each brick can be used separately on its own. The model is closer to provisioning infrastructure than installing a rice, or having to accept everything an ISO provides.
+Built brick by brick on top of a raw Linux base, but each brick can be used separately on its own. This is closer to provisioning infrastructure than installing a rice, or having to accept everything an ISO provides.
 
-Starting with a bare Debian machine, then layer the system upward through automated builders, configs, automated theming, standalone programs, and small systems that each do one job. Each piece has a job, and that job is tested through CI/CD so what works today keeps working tomorrow.
+Starting with a bare Debian machine, then layer the system upward through automated builders, configs, automated theming, standalone programs, and small systems that each do one job. Each piece has a job, and that job is tested through CI/CD into oblivion so what works today keeps working tomorrow.
 
-You can adopt the full direction, or you can take only the parts you want. Use the theming engine without my Neovim. Use the standalone programs on another distro.
+You can adopt the full direction, or you can take only the parts you want. Use the theming engine without my Neovim. Use the greeter on another distro, etc.
 
 Right now Debian is the base because it gives me a predictable substrate. Long term, the same idea can be carried to other distros: raw system first, scripted layers on top, reproducible user space after that.
 
