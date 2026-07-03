@@ -13,8 +13,6 @@
 
 <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/bc9208f7-a41e-4657-8449-ad73ab258a01" />
 
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/43044c6b-39ea-4b8d-8d89-db5fb01767a1" />
-
 ### Demo
 
 <div align="center">
@@ -29,23 +27,35 @@ This project is a reproducible Linux user space environment built from a [bare D
 
 Bare Debian as in, starts off without even having `sudo`, plain blank TTY. I broke down why I chose Debian [here](./docs/philosophy.md#model).
 
-I personally want my rig to behave like a hardened HUD, and still look premium.
+I want my rig to behave like a hardened HUD, and still look premium.
 
 A staged layer, provisioning scripts, generated configs, custom tools, cohesive theming, and CI verification checks that turn a blank TTY only Debian install into a keyboard driven workstation.
 
-My design philosophy is to delete any clutter.
-
 What they say? Good design is invisible, right?
 
-Most modern consumer interfaces are built for passive consumption, bloated, icons everywhere, flashy drop downs/apps, 55 choices to click on, and so on. All draining your cognitive bandwidth.
+The problem with modern consumer interfaces is they're built for passive consumption, bloated, icons everywhere, flashy drop downs/apps, 55 choices to click on, and so on. All draining your cognitive bandwidth.
 
-I nuked all of it. Not even the top bar survived, and [here's why](#jarvis-unreleased).
+Here, all that is nuked, all of it. Not even the top bar survived, and [here's why](#jarvis-unreleased).
 
-Everything adheres to a strict contextual color mapping system. When layout shift for example to a deep malachite green or a cold oceanic cyan, the entire visual layer adapts instantly.
+This is still WIP though, but currently it's actually pretty workable.
 
-My long term vision is a one command install that provisions everything in minutes, from anywhere.
+And I'm slowly open sourcing the entire system in layers.
 
-All you need is a USB stick and `curl`.
+There isn't a one command install yet, but I'm working on it so it provisions everything in minutes from anywhere.
+
+Currently the [bootstrap](/provisioning/bootstrap) sets up the initial things.
+
+It runs the fresh stage as root and pulls down the absolute vitals like network managers, core utilities, sudo, etc. Then the next stage takes over as the normal user. It wires up audio, video, and input groups, installs the desktop base, swaps shell to Zsh, and starts off all the runtime setups for Rust, Node, Go, and whatever else that installs from those.
+
+It basically builds the entire foundation for the next phase, which is the substrate for the UI, which is the hyprland builder, which is still private.
+
+I have a private repo where it compiles the window manager using a custom builder for Debian from source. It works perfectly, but not open sourced yet as it undergoes more CI checks. Will be merged here when it's stable.
+
+Speaking of CI checks, this is unheard of.
+
+The installers you'll find for Debian usually come with so much bloat and barely tested. May work, may not, please submit an issue, and wait. So everything here is CI/CD tested into oblivion and only builds exactly what it needs to be built.
+
+When this is done, basically all you need is a USB stick and `curl`.
 
 You run it, and minutes later a completely empty machine morphs into this exact hyper optimized workstation.
 
@@ -57,17 +67,11 @@ Also, this project is not dots. Dotfiles imply a bunch of config files that may 
 
 You'd see Alacritty, Ghostty, and Kitty configs, but none of them is slightly workable or even fits the other programs. i3 and Hyprland in the same dump, makes no sense.
 
-This project is work in progress though. And I'm slowly open sourcing the entire system in layers.
-
-My private setup is further ahead, but I'm busy, so parts only become public when they're stable and tested enough, which takes a little bit of time. I can't release something half portable. So when something is public, it's tested thoroughly and documented enough that you can fork it, use it, or fix it.
+My private setup is further ahead, and I'm busy, so parts only become public when they're stable and tested enough, which takes a little bit of time. I can't release something half portable. So when something is public, it's tested thoroughly and documented enough that you can fork it, use it, or fix it yourself.
 
 For example, [thyx](https://github.com/rccyx/thyx) existed since 2024, but was only open sourced in June 2026.
 
-I also compile the window manager using a custom Hyprland builder for Debian from source. It works perfectly, but hasn't been open sourced yet while it undergoes final stability checks.
-
-The other installers you'll find for Debian usually come with bloat and are barely tested. May work, may not, please submit an issue. So everything is CI/CD tested and only builds exactly what I need: Nothing but Hyprland.
-
-The current repo is mostly the visual setup for now.
+The current repo is mostly the visual setup for now. If you have the core programs like Hypr, tmux, starship etc, you can achieve the exact same look as the demos.
 
 But still, it exposes the portable surface, that I'll keep adding to:
 
@@ -84,15 +88,15 @@ Pure dotfiles are under [config/](./config). Although, the surface area for dots
 
 ## Docs
 
-If you want to dig through:
+Dig through:
 
 - [Starting](./docs/starting.md) (The eye candy? Instant theme switching, Hyprland, etc.)
-- [Stack](./docs/stack.md) (If it ain't broke, don't fix it)
+- [Stack](./docs/stack.md) (What's used here?)
 - [Philosophy](./docs/philosophy.md) (Why?)
 
 ## Custom Tools
 
-These are standalone tools written from scratch, that can be airdropped into any distro. Open sourced gradually when stable.
+These are standalone tools written from scratch, that can be airdropped into any distro.
 
 ### [lookas](https://github.com/rccyx/lookas)
 
@@ -112,9 +116,9 @@ cargo install lookas && lookas
 
 Pure C++ voice to text binary for Linux, done the UNIX way. No dependencies beyond the standard C++ and Linux toolchain.
 
-It links a local GGML Whisper backend, records through the active Linux audio stack, transcribes locally, copies the output, notifies the session, and exits.
+It links to GGML Whisper (local), records through the active Linux audio stack, transcribes locally, copies the output, notifies the session, and exits.
 
-Tap once, speak for as long as you want, tap again, that's it. Basically never errors out, and it comes in handy in a keyboard only workflow since I don't like typing. Supports 99 languages through the model weights.
+Tap once, speak for as long as you want, tap again, that's it. Basically never errors out, and it comes in handy in a keyboard only workflow. Supports 99 languages through the model weights.
 
 One command install/uninstall, and the CLI handles everything. UX for Linux is peak.
 
@@ -128,7 +132,7 @@ One command install/uninstall, and the CLI handles everything. UX for Linux is p
 
 A QML based SDDM login screen with video backgrounds, fingerprint authentication support, and a composable design system.
 
-Composable as in, you can configure it to your liking, although it ships with presets in case you want to plug in right away. If you don't like them, make your own and it'll still look good.
+Composable as in, you can configure it to your liking, although it ships with a bunch of presets in case you want to plug in right away. If you don't like them, make your own and it'll still look good.
 
 Comes with stateful and safe install/uninstall of course.
 
@@ -140,7 +144,7 @@ Comes with stateful and safe install/uninstall of course.
 
 ### Jarvis (Unreleased)
 
-Now here's the thing, my workflow is split between global keybinds and the CLI. No start menus, dropdowns, or clickable icons needed:
+Now here's the thing, the workflow is split between global keybinds and the CLI. No start menus, dropdowns, or clickable icons needed:
 
 - **Chrome:** Alt + G
 - **Obsidian:** Alt + O
@@ -157,11 +161,11 @@ But the prime real estate ran out a long time ago, so the CLI handles the rest.
 
 That's [Jarvis](https://en.wikipedia.org/wiki/J.A.R.V.I.S.).
 
-Most tasks are handled through the CLI with fuzzy finder autocompletion, as there's only so much one can remember.
+Most tasks are handled through the CLI with `fzf` autocompletion, as there's only so much one can remember.
 
 This includes everything from simple brightness adjustments, encryption, 2FA codes, network management, cloud analysis, reminders, syncing packages across Rust, TypeScript, Go, Python, APT, and whatever else, to Git ops, pull request management, reviews, submits, theming, ISO flashing, video editing, audio routing, and much more.
 
-It covers basically anything that doesn't really require a full blown GUI to use. Which if you think about it, it's most things.
+It covers basically anything that doesn't really require a full blown GUI to use. Which if you think about it, what does really require a full blown GUI?
 
 But, speaking of GUIs:
 
@@ -171,17 +175,17 @@ All programs launch in their correct workspaces on boot. Hit the power button, w
 
 Workspaces are always in the same position. They never change. `Super + 1` is workspace one, always notes. `Super + 9` is reserved for background focus sounds with `app yt` (YouTube). To move laterally, `Alt + Ctrl + Arrows`.
 
-The CLI is the system control layer, and it's what makes this setup actually usable as a workstation.
+The CLI is the system control layer, and it's what makes this setup usable as a workstation.
 
 A headless control center built to reduce the GUI footprint to the browser, the editor, and the few surfaces that really need those pixels.
 
 You may have noticed that none of the demos have a top/status bar. A top bar is basically redundant here, and a distraction for peak focus.
 
-One thing worse than bloated Electron apps eating my RAM is interrupting my focus with unnecessary data.
+One thing worse than bloated Electron apps eating RAM is interrupting my focus with unnecessary data.
 
 Starship already tells time. Event driven notifications surface critical system vitals.
 
-Why would I watch the battery sit at 97%? Keep getting anxious when it'll be 55% or something? My internet always works, if it cuts out I get notified. Battery too. 50%, 33%, 25%, then 20, 15, 10, 5 all get notified. Same with thermals, machine normally stays within a threshold, if it climbs past that, I get notified.
+Why would I watch the battery sit at 97%? Keep getting anxious when it'll be 55% or lower? The internet always works, and even if it cuts out, I get notified. Battery too. 50%, 33%, 25%, then 20, 15, 10, 5 all get notified. Same with thermals, machine normally stays within a threshold, if it climbs past that, I get notified.
 
 Everything that needs to be seen surfaces only when it needs to be seen.
 
@@ -189,19 +193,17 @@ Why would I need to know which workspace I'm in? I just know. `Super + 1` is not
 
 Weather? I'd have to set up an API. Plus, I have my phone right next to me, and even if not, I can just feel the weather.
 
-Why would I have a calendar in my tray? I use Google Calendar. Why would I have some random GUI that doesn't even link to my Google account? Can you book meetings on it? No. So `app cal` Google calendar launches as a native app.
+Why would I have a calendar in my tray? I use Google Calendar. Why would I have some random GUI that doesn't even link to anything? Can you book meetings on it? No. So `app cal` Google calendar launches as a native app.
 
 The way these events are set is using idempotent scripts. All encapsulated scripts or programs that can be applied or destroyed.
 
 Usually, to set these things up, you'd have to do step 1, step 2, step 3. Do this in systemd, do that here, copy this, etc. Manual editing/wiring.
 
-Here, you either apply or destroy, like Terraform.
-
-A random notification flashing, a changing percentage on a battery indicator, or an accidental mouse click can shatter my focus.
+Here, you either apply or destroy, just like Terraform.
 
 My philosophy here is basically, if something can be a command, it should be a command.
 
-I called it Jarvis because my vision is that I can finally ditch the keyboard for redundant work, and don't have to think about how to use a computer. The computer just bends to my thoughts instantly.
+I called it Jarvis because my vision is that I can finally ditch the keyboard for redundant work, and don't have to think about how to use a computer. The computer just bends to human thoughts instantly.
 
 ```text
 Hey Jarvis, connect to Oslo.
@@ -235,7 +237,7 @@ Notify me in 6 hours.
 
 Run OCR on this PDF.
 Name it YYYY-MM-DD-NAME-FINAL.pdf.
-Send it to my accountant.
+Send it.
 
 Hibernate now.
 ```
@@ -244,10 +246,7 @@ I genuinely don't like typing.
 
 ## And more...
 
-There's more to come. For example, the power menu from the demos.
-
-> [!TIP]
-> This is a long term thing. So you might want to stick around.
+There's more to come. For example, a power menu, etc.
 
 ## License
 
