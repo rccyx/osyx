@@ -10,7 +10,6 @@ Window {
     visibility: Window.FullScreen
     flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
     color: "transparent"
-    title: "powyx"
 
     property int exitCodeToReturn: 0
     property bool closing: false

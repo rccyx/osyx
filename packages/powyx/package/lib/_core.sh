@@ -47,6 +47,10 @@ _powyx_find_qml_runner() {
     _powyx_error "qml runner not found"
 }
 
+_powyx_verify_qml_runner() {
+    _powyx_find_qml_runner >/dev/null
+}
+
 _powyx_launch_qml() {
     "$POWYX_QML_RUNNER" --apptype gui "$POWYX_SHARE_DIR/src/Main.qml"
 }

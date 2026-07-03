@@ -26,9 +26,13 @@ _powyx_print_uninstall_plan() {
 }
 
 _powyx_verify_install() {
-    [[ -x "$POWYX_BIN_PATH" ]] || _powyx_error "binary install failed"
-    [[ -f "$POWYX_SHARE_DIR/src/Main.qml" ]] || _powyx_error "share install failed"
+    [[ -e "$POWYX_BIN_PATH" ]] || _powyx_error "binary install failed"
+    [[ -x "$POWYX_BIN_PATH" ]] || _powyx_error "binary is not executable"
+    [[ -f "$POWYX_SHARE_DIR/src/Main.qml" ]] || _powyx_error "share Main.qml missing"
+    [[ -d "$POWYX_SHARE_DIR/icons" ]] || _powyx_error "share icons directory missing"
+    [[ -d "$POWYX_SHARE_DIR/config" ]] || _powyx_error "share config directory missing"
     [[ -f "$POWYX_CONFIG_FILE" ]] || _powyx_error "config install failed"
+    _powyx_verify_qml_runner
     _powyx_log "install complete"
 }
 

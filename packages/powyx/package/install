@@ -8,12 +8,12 @@ source "$SCRIPT_DIR/lib/_fs.sh"
 source "$SCRIPT_DIR/lib/_pkg.sh"
 source "$SCRIPT_DIR/lib/_repo.sh"
 
-(($# == 0)) || _powyx_error "arguments are not supported"
+_powyx_parse_install_args "$@"
 
 _powyx_setup_log "install"
 _powyx_find_repo_root "$SCRIPT_DIR"
 _powyx_print_install_plan
-_powyx_install_debian_runtime_deps
+_powyx_install_runtime_deps
 _powyx_install_files_atomically
 _powyx_install_default_config
 _powyx_verify_install

@@ -1,24 +1,29 @@
 POWYX_DEBIAN_PACKAGES=(
-    bash
-    coreutils
-    grep
-    qml6
+    qml-qt6
     qml6-module-qtquick
     qml6-module-qtquick-window
     qml6-module-qtquick-layouts
-    qml6-module-qtsvg
+    libqt6svg6
 )
 
-_powyx_require_debian() {
-    if ! [[ -f /etc/os-release ]]; then
-        printf 'powyx supports Debian only\n' >&2
-        exit 1
-    fi
+POWYX_NO_INSTALL_DEPS=false
 
-    if ! grep -Eq '^ID=debian$|^ID="debian"$' /etc/os-release; then
-        printf 'powyx supports Debian only\n' >&2
-        exit 1
-    fi
+_powyx_parse_install_args() {
+    while (($# > 0)); do
+        case "$1" in
+            --no-install-deps)
+                POWYX_NO_INSTALL_DEPS=true
+                ;;
+            *)
+                _powyx_error "unsupported argument: $1"
+                ;;
+        esac
+        shift
+    done
+}
+
+_powyx_is_debian() {
+    [[ -f /etc/os-release ]] && grep -Eq '^ID=debian$|^ID="debian"$' /etc/os-release
 }
 
 _powyx_apt_get() {
@@ -31,8 +36,19 @@ _powyx_apt_get() {
     sudo apt-get "$@"
 }
 
-_powyx_install_debian_runtime_deps() {
-    _powyx_require_debian
+_powyx_install_runtime_deps() {
+    if [[ "$POWYX_NO_INSTALL_DEPS" == true ]]; then
+        _powyx_verify_qml_runner
+        return
+    fi
+
+    if ! _powyx_is_debian; then
+        printf 'powyx automatic dependency installation supports Debian only.\n' >&2
+        printf 'Install the Qt/QML runtime from README.md, then rerun:\n' >&2
+        printf '  ./package/install --no-install-deps\n' >&2
+        exit 1
+    fi
+
     command -v apt-get >/dev/null 2>&1 || _powyx_error "apt-get not found"
 
     local missing=()
@@ -44,13 +60,12 @@ _powyx_install_debian_runtime_deps() {
         fi
     done
 
-    if [[ "${#missing[@]}" -eq 0 ]]; then
-        return
+    if [[ "${#missing[@]}" -gt 0 ]]; then
+        _powyx_apt_get update -qq
+        _powyx_apt_get install -y --no-install-recommends "${missing[@]}"
     fi
 
-    _powyx_apt_get update -qq
-    _powyx_apt_get install -y --no-install-recommends "${missing[@]}"
-    command -v qml6 >/dev/null 2>&1 || _powyx_error "qml6 not found after dependency install"
+    _powyx_verify_qml_runner
 }
 
 _powyx_read_action_config() {
@@ -116,4 +131,5 @@ _powyx_run_action_command() {
 
     [[ -n "$command" ]] || _powyx_error "action command is empty"
     bash -lc -- "$command"
+    
 }
