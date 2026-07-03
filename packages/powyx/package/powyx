@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+POWYX_SHARE="${XDG_DATA_HOME:-$HOME/.local/share}/powyx"
+POWYX_CONFIG="${POWYX_CONFIG:-${XDG_CONFIG_HOME:-$HOME/.config}/powyx/theme.conf}"
+POWYX_TOML="${POWYX_TOML:-${XDG_CONFIG_HOME:-$HOME/.config}/powyx/powyx.toml}"
+
+get_toml() {
+    local key="$1"
+    local default="${2:-}"
+    if [[ -f "$POWYX_TOML" ]]; then
+        local val
+        val=$(grep -E "^[[:space:]]*${key}[[:space:]]*=" "$POWYX_TOML" 2>/dev/null \
+              | tail -1 | cut -d'=' -f2- | sed 's/^[[:space:]]*//;s/[[:space:]]*$//;s/^"//;s/"$//' || true)
+        if [[ -n "$val" ]]; then
+            echo "$val"
+            return
+        fi
+    fi
+    echo "$default"
+}
+
+LOCK_CMD=$(get_toml "lock" "swaylock")
+SUSPEND_CMD=$(get_toml "suspend" "systemctl suspend")
+REBOOT_CMD=$(get_toml "reboot" "systemctl reboot")
+SHUTDOWN_CMD=$(get_toml "shutdown" "systemctl poweroff")
+
+QML_BIN=""
+if command -v qml6 &>/dev/null; then
+    QML_BIN="qml6"
+elif command -v qml &>/dev/null; then
+    if qml --version | grep -q "6\." 2>/dev/null; then
+        QML_BIN="qml"
+    fi
+fi
+
+if [[ -z "$QML_BIN" ]]; then
+    echo "powyx: qml runner (Qt6) not found. Install qml-qt6 or qt6-declarative." >&2
+    exit 1
+fi
+
+if [[ ! -f "$POWYX_SHARE/src/Main.qml" ]]; then
+    echo "powyx: share files not found at $POWYX_SHARE. Run the installer." >&2
+    exit 1
+fi
+
+export POWYX_CONFIG
+EXIT_CODE=0
+
+"$QML_BIN" \
+    --apptype gui \
+    "$POWYX_SHARE/src/Main.qml" \
+    -- --config="$POWYX_CONFIG" \
+    "$@" || EXIT_CODE=$?
+
+case $EXIT_CODE in
+    10)
+        eval "$LOCK_CMD"
+        ;;
+    11)
+        eval "$SUSPEND_CMD"
+        ;;
+    12)
+        eval "$REBOOT_CMD"
+        ;;
+    13)
+        eval "$SHUTDOWN_CMD"
+        ;;
+    0)
+        ;;
+    *)
+        ;;
+esac

@@ -1,0 +1,5 @@
+[actions]
+lock = "hyprlock"
+suspend = "systemctl suspend"
+reboot = "systemctl reboot"
+shutdown = "systemctl poweroff"

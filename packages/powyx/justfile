@@ -1,0 +1,38 @@
+QML_RUNNER := `command -v qml6 || command -v qml || echo qml6`
+QMLLINT := `command -v qmllint6 || command -v qmllint || echo /usr/lib/qt6/bin/qmllint`
+QMLFORMAT := `command -v qmlformat6 || command -v qmlformat || echo /usr/lib/qt6/bin/qmlformat`
+
+l:
+    {{QMLLINT}} $(find src -name "*.qml" | sort)
+
+check: l s fc
+
+f:
+    {{QMLFORMAT}} -i $(find src -name "*.qml" | sort)
+
+fix: f
+    @echo "Formatting complete. Run 'just l' to verify remaining issues."
+
+fc:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    failed=0
+    while IFS= read -r -d '' f; do
+        formatted=$({{QMLFORMAT}} "$f")
+        original=$(cat "$f")
+        if [[ "$formatted" != "$original" ]]; then
+            echo "Not formatted: $f"
+            failed=1
+        fi
+    done < <(find src -name "*.qml" -print0 | sort -z)
+    exit $failed
+
+s:
+    shellcheck powyx install uninstall
+
+run:
+    {{QML_RUNNER}} src/Main.qml -- --config="config/theme.conf"
+
+run-conf conf:
+    {{QML_RUNNER}} src/Main.qml -- --config="{{ conf }}"
+

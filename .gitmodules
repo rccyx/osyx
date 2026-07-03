@@ -2,10 +2,6 @@
     path = config/jarvis
   	url = https://github.com/rccyx/jarvis.git
 
-[submodule "powyx"]
-    path = packages/powyx
-  	url = https://github.com/rccyx/powyx.git
-
 [submodule "hyprtryx"]
     path = packages/hyprtryx
   	url = https://github.com/rccyx/hyprtryx.git
