@@ -1,17 +1,14 @@
-QML_RUNNER := `command -v qml6 || command -v qml || echo qml6`
-QMLLINT := `command -v qmllint6 || command -v qmllint || echo /usr/lib/qt6/bin/qmllint`
-QMLFORMAT := `command -v qmlformat6 || command -v qmlformat || echo /usr/lib/qt6/bin/qmlformat`
+QML_RUNNER := `command -v qml6 || command -v qml || { echo "missing qml runner" >&2; exit 1; }`
+QMLLINT := `command -v qmllint6 || command -v qmllint || { echo "missing qmllint" >&2; exit 1; }`
+QMLFORMAT := `command -v qmlformat6 || command -v qmlformat || { echo "missing qmlformat" >&2; exit 1; }`
 
 l:
     {{QMLLINT}} $(find src -name "*.qml" | sort)
 
-check: l s fc
+check: fc l s
 
 f:
     {{QMLFORMAT}} -i $(find src -name "*.qml" | sort)
-
-fix: f
-    @echo "Formatting complete. Run 'just l' to verify remaining issues."
 
 fc:
     #!/usr/bin/env bash
@@ -28,11 +25,7 @@ fc:
     exit $failed
 
 s:
-    shellcheck powyx install uninstall
+    shellcheck -x -P package package/install package/powyx package/uninstall
 
 run:
-    {{QML_RUNNER}} src/Main.qml -- --config="config/theme.conf"
-
-run-conf conf:
-    {{QML_RUNNER}} src/Main.qml -- --config="{{ conf }}"
-
+    {{QML_RUNNER}} src/Main.qml

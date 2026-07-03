@@ -1,69 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SHARE_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/powyx"
-BIN_PATH="$HOME/.local/bin/powyx"
-LOG_DIR="$HOME/.cache/powyx"
-LOG_FILE="$LOG_DIR/uninstall-$(date +%Y%m%d-%H%M%S).log"
-HYPR_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/hypr/hyprland.conf"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-YES=false
-WIPE_CONFIG=false
-for arg in "$@"; do
-    [[ "$arg" == "--yes" ]] && YES=true
-    [[ "$arg" == "--wipe-config" ]] && WIPE_CONFIG=true
-done
+source "$SCRIPT_DIR/lib/_core.sh"
+source "$SCRIPT_DIR/lib/_fs.sh"
+source "$SCRIPT_DIR/lib/_pkg.sh"
+source "$SCRIPT_DIR/lib/_repo.sh"
 
-mkdir -p "$LOG_DIR"
-exec > >(tee -a "$LOG_FILE") 2>&1
+(($# == 0)) || _powyx_error "arguments are not supported"
 
-log() { echo "[powyx] $*"; }
-
-echo
-echo "  powyx — uninstaller"
-echo "  ───────────────────────────────────────────────────────────"
-echo "  Remove share files   → $SHARE_DIR"
-echo "  Remove launcher      → $BIN_PATH"
-[[ "$WIPE_CONFIG" == true ]] && echo "  Remove config        → ${XDG_CONFIG_HOME:-$HOME/.config}/powyx/"
-echo "  Log                  → $LOG_FILE"
-echo
-
-if [[ "$YES" != true ]]; then
-    read -r -p "  Proceed? [y/N] " confirm
-    [[ "$confirm" =~ ^[Yy]$ ]] || { echo "  Aborted."; exit 0; }
-fi
-
-echo
-
-if [[ -d "$SHARE_DIR" ]]; then
-    rm -rf "$SHARE_DIR"
-    log "Removed $SHARE_DIR"
-else
-    log "$SHARE_DIR not found — skipping."
-fi
-
-if [[ -f "$BIN_PATH" ]]; then
-    rm -f "$BIN_PATH"
-    log "Removed $BIN_PATH"
-else
-    log "$BIN_PATH not found — skipping."
-fi
-
-if [[ -f "$HYPR_CONF" ]] && grep -q "title:^(powyx)$" "$HYPR_CONF" 2>/dev/null; then
-    sed -i '/^windowrulev2 = float, class:^(qml6|qml)$, title:^(powyx)$/,/^bind.*powyx$/d' "$HYPR_CONF"
-    log "Removed powyx rules from $HYPR_CONF"
-fi
-
-CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/powyx"
-if [[ "$WIPE_CONFIG" == true ]]; then
-    if [[ -d "$CONFIG_DIR" ]]; then
-        rm -rf "$CONFIG_DIR"
-        log "Removed $CONFIG_DIR"
-    fi
-else
-    log "Config at $CONFIG_DIR preserved. Use --wipe-config to remove it."
-fi
-
-echo
-log "Uninstall complete."
-echo
+_powyx_setup_log "uninstall"
+_powyx_print_uninstall_plan
+_powyx_uninstall_binary
+_powyx_uninstall_share
+_powyx_preserve_config
+_powyx_verify_uninstall

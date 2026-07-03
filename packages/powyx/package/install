@@ -1,186 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SHARE_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/powyx"
-CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/powyx"
-BIN_DIR="$HOME/.local/bin"
-LOG_DIR="$HOME/.cache/powyx"
-LOG_FILE="$LOG_DIR/install-$(date +%Y%m%d-%H%M%S).log"
-HYPR_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/hypr/hyprland.conf"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-YES=false
-for arg in "$@"; do
-    [[ "$arg" == "--yes" ]] && YES=true
-done
+source "$SCRIPT_DIR/lib/_core.sh"
+source "$SCRIPT_DIR/lib/_fs.sh"
+source "$SCRIPT_DIR/lib/_pkg.sh"
+source "$SCRIPT_DIR/lib/_repo.sh"
 
-mkdir -p "$LOG_DIR"
-exec > >(tee -a "$LOG_FILE") 2>&1
+(($# == 0)) || _powyx_error "arguments are not supported"
 
-log() { echo "[powyx] $*"; }
-
-find_qml6() {
-    for candidate in qml6 /usr/lib/qt6/bin/qml6 /usr/local/lib/qt6/bin/qml6 /opt/qt6/bin/qml6; do
-        if command -v "$candidate" &>/dev/null; then
-            command -v "$candidate"
-            return 0
-        elif [[ -x "$candidate" ]]; then
-            echo "$candidate"
-            return 0
-        fi
-    done
-    find /usr /opt -name "qml6" -type f -executable 2>/dev/null | head -1 || true
-}
-
-echo
-echo "  powyx — power menu"
-echo "  ───────────────────────────────────────────────────────────"
-echo "  Install share files  → $SHARE_DIR"
-echo "  Install launcher     → $BIN_DIR/powyx"
-echo "  Install config       → $CONFIG_DIR/theme.conf (if absent)"
-echo "  Log                  → $LOG_FILE"
-echo
-
-if [[ "$YES" != true ]]; then
-    read -r -p "  Proceed? [y/N] " confirm
-    [[ "$confirm" =~ ^[Yy]$ ]] || { echo "  Aborted."; exit 0; }
-fi
-
-echo
-
-QML6_BIN=$(find_qml6)
-
-if [[ -z "$QML6_BIN" ]]; then
-    log "qml6 not found — installing..."
-    if command -v apt-get &>/dev/null; then
-        sudo apt-get update -qq
-        sudo apt-get install -y --no-install-recommends \
-            qml-qt6 \
-            qt6-declarative-dev-tools \
-            qml6-module-qtquick \
-            qml6-module-qtquick-controls \
-            qml6-module-qtquick-layouts \
-            qml6-module-qt5compat-graphicaleffects
-    elif command -v pacman &>/dev/null; then
-        sudo pacman -Syu --noconfirm --needed qt6-declarative qt6-5compat
-    elif command -v dnf &>/dev/null; then
-        sudo dnf install -y qt6-qtdeclarative qt6-qt5compat
-    else
-        echo "  Cannot install qml6 — unsupported package manager." >&2
-        exit 1
-    fi
-    QML6_BIN=$(find_qml6)
-    if [[ -z "$QML6_BIN" ]]; then
-        echo "  Installed packages but still cannot find qml6 binary." >&2
-        exit 1
-    fi
-fi
-
-log "qml6 found: $QML6_BIN"
-
-LOCK_CMD_DEFAULT="hyprlock"
-SUSPEND_CMD_DEFAULT="systemctl suspend"
-REBOOT_CMD_DEFAULT="systemctl reboot"
-SHUTDOWN_CMD_DEFAULT="systemctl poweroff"
-
-if [[ "$YES" == true ]]; then
-    LOCK_CMD=$LOCK_CMD_DEFAULT
-    SUSPEND_CMD=$SUSPEND_CMD_DEFAULT
-    REBOOT_CMD=$REBOOT_CMD_DEFAULT
-    SHUTDOWN_CMD=$SHUTDOWN_CMD_DEFAULT
-else
-    echo "  System Action Configuration"
-    echo "  ───────────────────────────────────────────────────────────"
-    read -r -p "  Lock command     [$LOCK_CMD_DEFAULT]: " LOCK_CMD
-    LOCK_CMD=${LOCK_CMD:-$LOCK_CMD_DEFAULT}
-
-    read -r -p "  Suspend command  [$SUSPEND_CMD_DEFAULT]: " SUSPEND_CMD
-    SUSPEND_CMD=${SUSPEND_CMD:-$SUSPEND_CMD_DEFAULT}
-
-    read -r -p "  Reboot command   [$REBOOT_CMD_DEFAULT]: " REBOOT_CMD
-    REBOOT_CMD=${REBOOT_CMD:-$REBOOT_CMD_DEFAULT}
-
-    read -r -p "  Shutdown command [$SHUTDOWN_CMD_DEFAULT]: " SHUTDOWN_CMD
-    SHUTDOWN_CMD=${SHUTDOWN_CMD:-$SHUTDOWN_CMD_DEFAULT}
-    echo
-fi
-
-log "Installing share files to $SHARE_DIR..."
-mkdir -p "$SHARE_DIR"
-rsync -a --delete "$SCRIPT_DIR/../src/" "$SHARE_DIR/src/"
-rsync -a --delete "$SCRIPT_DIR/../icons/" "$SHARE_DIR/icons/"
-rsync -a --delete "$SCRIPT_DIR/../config/" "$SHARE_DIR/config/"
-log "Share files installed."
-
-log "Installing launcher to $BIN_DIR/powyx..."
-mkdir -p "$BIN_DIR"
-install -m 0755 "$SCRIPT_DIR/powyx" "$BIN_DIR/powyx"
-log "Launcher installed."
-
-if [[ ":$PATH:" != *":$BIN_DIR:"* ]]; then
-    log "  Note: $BIN_DIR is not in PATH. Add it to your shell profile."
-fi
-
-if [[ ! -f "$CONFIG_DIR/theme.conf" ]]; then
-    log "Installing default theme config to $CONFIG_DIR/theme.conf..."
-    mkdir -p "$CONFIG_DIR"
-    cp "$SCRIPT_DIR/../config/theme.conf" "$CONFIG_DIR/theme.conf"
-    log "Theme config installed."
-else
-    log "Theme config already exists at $CONFIG_DIR/theme.conf — not overwriting."
-fi
-
-if [[ ! -f "$CONFIG_DIR/powyx.toml" ]]; then
-    log "Installing system action config to $CONFIG_DIR/powyx.toml..."
-    mkdir -p "$CONFIG_DIR"
-    
-    cat > "$CONFIG_DIR/powyx.toml" <<EOF
-[actions]
-lock = "$LOCK_CMD"
-suspend = "$SUSPEND_CMD"
-reboot = "$REBOOT_CMD"
-shutdown = "$SHUTDOWN_CMD"
-EOF
-    log "System action config installed and configured."
-else
-    log "System action config already exists at $CONFIG_DIR/powyx.toml — not overwriting."
-fi
-
-HYPR_BLOCK="
-windowrulev2 = float, class:^(qml6|qml)$, title:^(powyx)$
-windowrulev2 = size 100% 100%, class:^(qml6|qml)$, title:^(powyx)$
-windowrulev2 = center, class:^(qml6|qml)$, title:^(powyx)$
-windowrulev2 = pin, class:^(qml6|qml)$, title:^(powyx)$
-windowrulev2 = noborder, class:^(qml6|qml)$, title:^(powyx)$
-windowrulev2 = noshadow, class:^(qml6|qml)$, title:^(powyx)$
-windowrulev2 = noanim, class:^(qml6|qml)$, title:^(powyx)$
-windowrulev2 = stayfocused, class:^(qml6|qml)$, title:^(powyx)$
-bind = SUPER, Escape, exec, powyx"
-
-if [[ -f "$HYPR_CONF" ]]; then
-    if grep -q "title:^(powyx)$" "$HYPR_CONF" 2>/dev/null; then
-        log "Hyprland rules already present — skipping."
-    else
-        if [[ "$YES" != true ]]; then
-            echo
-            read -r -p "  Append powyx rules and keybind to $HYPR_CONF? [y/N] " hconfirm
-        else
-            hconfirm="y"
-        fi
-        if [[ "$hconfirm" =~ ^[Yy]$ ]]; then
-            echo "$HYPR_BLOCK" >> "$HYPR_CONF"
-            log "Hyprland rules appended."
-        fi
-    fi
-else
-    log "Hyprland config not found at $HYPR_CONF — skipping."
-    echo
-    echo "  Add these to your hyprland.conf:"
-    echo "$HYPR_BLOCK"
-fi
-
-echo
-log "Installation complete."
-log "Run 'powyx' to launch, or press SUPER + Escape if you added the keybind."
-log "Log: $LOG_FILE"
-echo
+_powyx_setup_log "install"
+_powyx_find_repo_root "$SCRIPT_DIR"
+_powyx_print_install_plan
+_powyx_install_debian_runtime_deps
+_powyx_install_files_atomically
+_powyx_install_default_config
+_powyx_verify_install

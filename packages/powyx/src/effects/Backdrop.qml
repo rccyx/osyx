@@ -1,4 +1,3 @@
-// qmllint disable unqualified unresolved-type missing-property
 import QtQuick
 import Qt5Compat.GraphicalEffects
 import ".."
@@ -6,7 +5,6 @@ import ".."
 Item {
     id: backdrop
 
-    required property var cfg
     required property int animDuration
 
     signal dismissed
@@ -14,7 +12,7 @@ Item {
     Rectangle {
         id: overlay
         anchors.fill: parent
-        color: backdrop.cfg.BackdropColor || Style.colors.bgDeep
+        color: Style.colors.bgDeep
         opacity: 0
 
         Behavior on opacity {
@@ -36,16 +34,16 @@ Item {
         opacity: 0.6
         gradient: Gradient {
             GradientStop {
-                position: 0.0
-                color: "transparent"
+                position: 0
+                color: Style.colors.transparent
             }
             GradientStop {
                 position: 0.6
-                color: "#44000000"
+                color: Style.colors.vignetteMid
             }
             GradientStop {
-                position: 1.0
-                color: "#AA000000"
+                position: 1
+                color: Style.colors.vignetteEdge
             }
         }
     }
@@ -54,7 +52,7 @@ Item {
         anchors.fill: parent
         opacity: 0.03
         visible: true
-        color: "black"
+        color: Style.colors.black
     }
 
     MouseArea {
@@ -64,7 +62,5 @@ Item {
         onClicked: backdrop.dismissed()
     }
 
-    Component.onCompleted: {
-        overlay.opacity = parseFloat(backdrop.cfg.BackdropOpacity) || Style.effects.backdropOpacity;
-    }
+    Component.onCompleted: overlay.opacity = Style.effects.backdropOpacity
 }

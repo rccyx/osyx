@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Layouts
 import ".."
@@ -5,11 +7,33 @@ import ".."
 Item {
     id: panel
 
-    required property var cfg
     required property int animDuration
 
     signal actionSelected(int exitCode)
     signal exitFinished
+
+    readonly property var actions: [
+        {
+            action: "lock",
+            label: "Lock",
+            icon: Qt.resolvedUrl("../../icons/lock.svg")
+        },
+        {
+            action: "suspend",
+            label: "Suspend",
+            icon: Qt.resolvedUrl("../../icons/sleep.svg")
+        },
+        {
+            action: "reboot",
+            label: "Reboot",
+            icon: Qt.resolvedUrl("../../icons/restart.svg")
+        },
+        {
+            action: "shutdown",
+            label: "Shutdown",
+            icon: Qt.resolvedUrl("../../icons/shutdown.svg")
+        }
+    ]
 
     width: buttonRow.implicitWidth
     height: buttonRow.implicitHeight
@@ -38,7 +62,7 @@ Item {
             target: panel
             property: "scale"
             from: 0.94
-            to: 1.0
+            to: 1
             duration: panel.animDuration * 2.5
             easing.type: Easing.OutBack
         }
@@ -70,54 +94,23 @@ Item {
         RowLayout {
             id: buttonRow
             Layout.alignment: Qt.AlignHCenter
-            spacing: parseInt(panel.cfg.ButtonSpacing) || Style.spacing.buttonGap
+            spacing: Style.spacing.buttonGap
 
-            ActionButton {
-                idx: 0
-                action: "lock"
-                label: "Lock"
-                iconPath: Qt.resolvedUrl("../../icons/lock.svg")
-                cfg: panel.cfg
-                animDuration: panel.animDuration
-                animEasing: Easing.OutQuart
-                staggerDelay: 0 * 60
-                onActionFired: exitCode => panel.actionSelected(exitCode)
-            }
+            Repeater {
+                model: panel.actions
 
-            ActionButton {
-                idx: 1
-                action: "suspend"
-                label: "Suspend"
-                iconPath: Qt.resolvedUrl("../../icons/sleep.svg")
-                cfg: panel.cfg
-                animDuration: panel.animDuration
-                animEasing: Easing.OutQuart
-                staggerDelay: 1 * 60
-                onActionFired: exitCode => panel.actionSelected(exitCode)
-            }
+                ActionButton {
+                    required property int index
+                    required property var modelData
 
-            ActionButton {
-                idx: 2
-                action: "reboot"
-                label: "Reboot"
-                iconPath: Qt.resolvedUrl("../../icons/restart.svg")
-                cfg: panel.cfg
-                animDuration: panel.animDuration
-                animEasing: Easing.OutQuart
-                staggerDelay: 2 * 60
-                onActionFired: exitCode => panel.actionSelected(exitCode)
-            }
-
-            ActionButton {
-                idx: 3
-                action: "shutdown"
-                label: "Shutdown"
-                iconPath: Qt.resolvedUrl("../../icons/shutdown.svg")
-                cfg: panel.cfg
-                animDuration: panel.animDuration
-                animEasing: Easing.OutQuart
-                staggerDelay: 3 * 60
-                onActionFired: exitCode => panel.actionSelected(exitCode)
+                    idx: index
+                    action: modelData.action
+                    label: modelData.label
+                    iconSource: modelData.icon
+                    animDuration: panel.animDuration
+                    staggerDelay: index * 60
+                    onActionFired: exitCode => panel.actionSelected(exitCode)
+                }
             }
         }
     }
