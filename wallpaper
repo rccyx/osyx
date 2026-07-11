@@ -1,0 +1,75 @@
+#!/bin/bash
+
+WPDIR="${WALLPAPER_DIR:-$HOME/.wallpapers}"
+INI="$HOME/.config/waypaper/config.ini"
+
+_wallpaper_check_deps() {
+  local missing=0
+  for cmd in waypaper swww swww-daemon; do
+    if ! command -v "$cmd" >/dev/null 2>&1; then
+      printf "ERROR: '%s' is not installed or not in your PATH.\n" "$cmd" >&2
+      missing=1
+    fi
+  done
+  return "$missing"
+}
+
+_wallpaper_start_daemon() {
+  if ! pgrep -x swww-daemon >/dev/null; then
+    swww-daemon >/dev/null 2>&1 &
+    sleep 0.5
+  fi
+}
+
+_wallpaper_ensure_config() {
+  mkdir -p "$(dirname "$INI")" "$WPDIR"
+  if [ ! -f "$INI" ]; then
+    cat >"$INI" <<EOF
+[Settings]
+folder = $WPDIR
+backend = swww
+fill = Fill
+monitors = All
+subfolders = False
+show_hidden = False
+swww_transition_type = any
+swww_transition_step = 90
+swww_transition_angle = 0
+swww_transition_duration = 2
+swww_transition_fps = 60
+EOF
+  fi
+}
+
+wallpaper() {
+  _wallpaper_check_deps || return 1
+  _wallpaper_start_daemon
+  _wallpaper_ensure_config
+
+  case "${1:-}" in
+    "")
+      waypaper >/dev/null 2>&1 &
+      ;;
+    set)
+      shift
+      local img="${1:-}"
+      if [ ! -f "$img" ]; then
+        printf "ERROR: File not found -> %s\n" "$img" >&2
+        return 1
+      fi
+      waypaper --wallpaper "$img" >/dev/null 2>&1
+      ;;
+    random)
+      waypaper --folder "$WPDIR" --random >/dev/null 2>&1
+      ;;
+    restore)
+      waypaper --restore >/dev/null 2>&1
+      ;;
+    *)
+      printf "Usage: wallpaper [set <file> | random | restore]\n" >&2
+      return 1
+      ;;
+  esac
+}
+
+wallpaper "$@"
