@@ -40,9 +40,6 @@ wallpaper() {
     random)
       waypaper --folder "$WPDIR" --random >/dev/null 2>&1
       ;;
-    restore)
-      waypaper --restore >/dev/null 2>&1
-      ;;
     *)
       printf "Usage: wallpaper [set <file> | random | restore]\n" >&2
       return 1
