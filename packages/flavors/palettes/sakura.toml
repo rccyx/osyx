@@ -68,14 +68,8 @@ text = "fcd8e4"
 selected_bg = "e08098"
 selected_text = "080e18"
 
-[nvim]
-colorscheme = "kanagawa-dragon"
-bg = "080e18"
-fg = "fcd8e4"
-accent = "f0a8bc"
-muted = "172535"
-border = "1e3040"
-cursorline = "0d1a28"
+[theme_names]
+nvim =  "kanagawa-dragon"
 
 [dircolors]
 dir = "fcd8e4"

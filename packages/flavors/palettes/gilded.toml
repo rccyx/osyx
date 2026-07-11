@@ -68,14 +68,10 @@ text = "efe2c7"
 selected_bg = "d19a45"
 selected_text = "0b0d0a"
 
-[nvim]
-colorscheme = "catppuccin"
-bg = "0b0d0a"
-fg = "efe2c7"
-accent = "d19a45"
-muted = "9a7447"
-border = "a15c1d"
-cursorline = "17140e"
+
+
+[theme_names]
+nvim = "catppuccin"
 
 [dircolors]
 dir = "d19a45"

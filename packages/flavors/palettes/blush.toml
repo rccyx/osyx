@@ -68,14 +68,8 @@ text = "ca9395"
 selected_bg = "b97074"
 selected_text = "12080a"
 
-[nvim]
-colorscheme = "everforest"
-bg = "12080a"
-fg = "ca9395"
-accent = "ca9395"
-muted = "261c17"
-border = "4f2d29"
-cursorline = "12080a"
+[theme_names]
+nvim = "everforest"
 
 [dircolors]
 dir = "ca9395"

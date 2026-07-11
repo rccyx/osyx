@@ -1,0 +1,4 @@
+flavor = "inferno"
+
+[apps]
+nvim = "kanagawa-dragon"

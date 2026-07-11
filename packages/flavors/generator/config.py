@@ -7,6 +7,7 @@ ROOT_DIR = SCRIPT_DIR.parent
 FLAVORS_DIR = ROOT_DIR / "flavors"
 TEMPLATES_DIR = FLAVORS_DIR / "templates"
 PALETTES_DIR = FLAVORS_DIR / "palettes"
+THEME_NAMES_FILE = FLAVORS_DIR / "theme-names.toml"
 
 OUTPUTS = {
     "mako.conf.j2": ".config/mako/config",
@@ -15,6 +16,5 @@ OUTPUTS = {
     "hypr.conf.j2": ".config/hypr/theme.conf",
     "tmux.conf.j2": ".tmux.conf",
     "wofi.css.j2": ".config/wofi/style.css",
-    "nvim.lua.j2": ".config/nvim/lua/theme.lua",
     "gitconfig.j2": ".gitconfig.d/theme",
 }

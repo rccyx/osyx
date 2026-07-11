@@ -68,14 +68,9 @@ text = "a7d4e3"
 selected_bg = "1687ad"
 selected_text = "020f14"
 
-[nvim]
-colorscheme = "tokyonight"
-bg = "020f14"
-fg = "a7d4e3"
-accent = "72b4c9"
-muted = "07324a"
-border = "075b82"
-cursorline = "0a202b"
+[theme_names]
+nvim = "tokyonight"
+
 
 [dircolors]
 dir = "72b4c9"
