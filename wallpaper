@@ -1,7 +1,6 @@
 #!/bin/bash
 
 WPDIR="${WALLPAPER_DIR:-$HOME/.wallpapers}"
-INI="$HOME/.config/waypaper/config.ini"
 
 _wallpaper_check_deps() {
   local missing=0
@@ -21,30 +20,9 @@ _wallpaper_start_daemon() {
   fi
 }
 
-_wallpaper_ensure_config() {
-  mkdir -p "$(dirname "$INI")" "$WPDIR"
-  if [ ! -f "$INI" ]; then
-    cat >"$INI" <<EOF
-[Settings]
-folder = $WPDIR
-backend = swww
-fill = Fill
-monitors = All
-subfolders = False
-show_hidden = False
-swww_transition_type = any
-swww_transition_step = 90
-swww_transition_angle = 0
-swww_transition_duration = 2
-swww_transition_fps = 60
-EOF
-  fi
-}
-
 wallpaper() {
   _wallpaper_check_deps || return 1
   _wallpaper_start_daemon
-  _wallpaper_ensure_config
 
   case "${1:-}" in
     "")
