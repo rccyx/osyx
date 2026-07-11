@@ -1,6 +1,6 @@
 # bin
 
-To run these binaries globally from any directory, move this `/bin` folder to `~`.
+To run these binaries globally from any directory, move this `/bin` folder to `~` if not bootstrapped there already.
 
 The [`~/.zshrc`](/config/.zshrc) file already sets this up and autosources any new binary at `~/bin`.
 

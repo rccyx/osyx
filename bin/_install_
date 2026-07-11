@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+
+mkdir -p "$HOME/bin"
+cp -a "$DIR"/. "$HOME/bin"/
+chmod u+x "$HOME/bin"/*
