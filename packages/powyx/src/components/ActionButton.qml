@@ -8,6 +8,7 @@ Item {
     required property string action
     required property string label
     required property url iconSource
+    required property color confirmColor
 
     property int idx: 0
     property int animDuration: Style.animations.normal
@@ -97,7 +98,7 @@ Item {
         anchors.fill: btnRect
         glowRadius: 32
         spread: 0.2
-        color: actionBtn.confirming ? Style.colors.warning : Style.colors.accent
+        color: actionBtn.confirming ? actionBtn.confirmColor : Style.colors.accent
         opacity: actionBtn.hovered ? 0.18 : 0
         cornerRadius: btnRect.radius + glowRadius
 
@@ -117,7 +118,7 @@ Item {
 
         color: actionBtn.pressed ? Style.colors.surfacePressed : actionBtn.hovered ? Style.colors.surfaceHover : Style.colors.transparent
         border.width: actionBtn.hovered ? 2 : 1
-        border.color: actionBtn.confirming ? Style.colors.warning : actionBtn.hovered ? Style.colors.accent : Style.colors.borderGlass
+        border.color: actionBtn.confirming ? actionBtn.confirmColor : actionBtn.hovered ? Style.colors.accent : Style.colors.borderGlass
 
         scale: actionBtn.pressed ? 0.96 : actionBtn.hovered ? 1.04 : 1
 
@@ -174,7 +175,7 @@ Item {
             ColorOverlay {
                 anchors.fill: icon
                 source: icon
-                color: actionBtn.confirming ? Style.colors.warning : actionBtn.hovered ? Style.colors.accent : Style.colors.iconMuted
+                color: actionBtn.confirming ? actionBtn.confirmColor : actionBtn.hovered ? Style.colors.accent : Style.colors.iconMuted
                 Behavior on color {
                     ColorAnimation {
                         duration: actionBtn.fastAnim
@@ -189,7 +190,7 @@ Item {
             radius: parent.radius + 6
             color: Style.colors.transparent
             border.width: actionBtn.confirming ? 2 : 0
-            border.color: Style.colors.warning
+            border.color: actionBtn.confirming ? actionBtn.confirmColor : Style.colors.transparent
             opacity: actionBtn.confirming ? 0.6 : 0
 
             RotationAnimation on rotation {
@@ -229,7 +230,7 @@ Item {
             letterSpacing: Style.typography.letterSpacing * 1.5
         }
 
-        color: actionBtn.confirming ? Style.colors.warning : actionBtn.hovered ? Style.colors.accent : Style.colors.labelMuted
+        color: actionBtn.confirming ? actionBtn.confirmColor : actionBtn.hovered ? Style.colors.accent : Style.colors.labelMuted
         opacity: actionBtn.hovered || actionBtn.confirming ? 1 : 0.7
 
         Behavior on color {

@@ -13,7 +13,9 @@ source "$SCRIPT_DIR/lib/_repo.sh"
 _powyx_find_installed_share_dir
 _powyx_find_qml_runner
 _powyx_read_action_config
+_powyx_read_theme_config
 _powyx_validate_action_config
+_powyx_validate_theme_config
 POWYX_EXIT_CODE=0
 _powyx_launch_qml || POWYX_EXIT_CODE=$?
 _powyx_dispatch_qml_exit_code "$POWYX_EXIT_CODE"

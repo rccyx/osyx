@@ -3,3 +3,6 @@ lock = "hyprlock"
 suspend = "systemctl suspend"
 reboot = "systemctl reboot"
 shutdown = "systemctl poweroff"
+
+[theme]
+confirm = "#E7BE5B"

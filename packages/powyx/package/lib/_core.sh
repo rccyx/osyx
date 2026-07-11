@@ -52,5 +52,5 @@ _powyx_verify_qml_runner() {
 }
 
 _powyx_launch_qml() {
-    "$POWYX_QML_RUNNER" --apptype gui "$POWYX_SHARE_DIR/src/Main.qml"
+    "$POWYX_QML_RUNNER" --apptype gui "$POWYX_SHARE_DIR/src/Main.qml" -- --confirm="$POWYX_CONFIRM"
 }

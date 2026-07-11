@@ -8,6 +8,7 @@ Item {
     id: panel
 
     required property int animDuration
+    required property color confirmColor
 
     signal actionSelected(int exitCode)
     signal exitFinished
@@ -108,6 +109,7 @@ Item {
                     label: modelData.label
                     iconSource: modelData.icon
                     animDuration: panel.animDuration
+                    confirmColor: panel.confirmColor
                     staggerDelay: index * 60
                     onActionFired: exitCode => panel.actionSelected(exitCode)
                 }

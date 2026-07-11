@@ -14,7 +14,7 @@ QtObject {
     readonly property color iconMuted: "#80FFFFFF"
     readonly property color labelMuted: "#B0FFFFFF"
 
-    readonly property color warning: "#E7BE5B"
+    readonly property color confirm: "#E7BE5B"
 
     readonly property color surfaceHover: "#0DFFFFFF"
     readonly property color surfacePressed: "#1AFFFFFF"

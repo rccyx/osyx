@@ -33,6 +33,10 @@ _powyx_verify_install() {
     [[ -d "$POWYX_SHARE_DIR/config" ]] || _powyx_error "share config directory missing"
     [[ -f "$POWYX_CONFIG_FILE" ]] || _powyx_error "config install failed"
     _powyx_verify_qml_runner
+    _powyx_read_action_config
+    _powyx_read_theme_config
+    _powyx_validate_action_config
+    _powyx_validate_theme_config
     _powyx_log "install complete"
 }
 

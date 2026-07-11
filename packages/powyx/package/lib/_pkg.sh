@@ -71,33 +71,90 @@ _powyx_install_runtime_deps() {
 _powyx_read_action_config() {
     [[ -f "$POWYX_CONFIG_FILE" ]] || _powyx_error "missing config: $POWYX_CONFIG_FILE"
 
-    POWYX_LOCK_CMD="$(_powyx_read_action_command lock)"
-    POWYX_SUSPEND_CMD="$(_powyx_read_action_command suspend)"
-    POWYX_REBOOT_CMD="$(_powyx_read_action_command reboot)"
-    POWYX_SHUTDOWN_CMD="$(_powyx_read_action_command shutdown)"
+    POWYX_LOCK_CMD="$(_powyx_read_toml_string actions lock)"
+    POWYX_SUSPEND_CMD="$(_powyx_read_toml_string actions suspend)"
+    POWYX_REBOOT_CMD="$(_powyx_read_toml_string actions reboot)"
+    POWYX_SHUTDOWN_CMD="$(_powyx_read_toml_string actions shutdown)"
 }
 
-_powyx_read_action_command() {
-    local key="$1"
-    local value
+_powyx_read_theme_config() {
+    [[ -f "$POWYX_CONFIG_FILE" ]] || _powyx_error "missing config: $POWYX_CONFIG_FILE"
 
-    value="$(sed -n "s/^[[:space:]]*${key}[[:space:]]*=[[:space:]]*\"\\(.*\\)\"[[:space:]]*$/\\1/p" "$POWYX_CONFIG_FILE")"
-    printf '%s\n' "$value"
+    POWYX_CONFIRM="$(_powyx_read_toml_string theme confirm)"
 }
 
 _powyx_validate_action_config() {
-    _powyx_validate_exact_action_keys
+    _powyx_validate_toml_keys actions "lock reboot shutdown suspend "
     [[ -n "$POWYX_LOCK_CMD" ]] || _powyx_error "lock action is empty"
     [[ -n "$POWYX_SUSPEND_CMD" ]] || _powyx_error "suspend action is empty"
     [[ -n "$POWYX_REBOOT_CMD" ]] || _powyx_error "reboot action is empty"
     [[ -n "$POWYX_SHUTDOWN_CMD" ]] || _powyx_error "shutdown action is empty"
 }
 
-_powyx_validate_exact_action_keys() {
+_powyx_validate_theme_config() {
+    [[ -n "$POWYX_CONFIRM" ]] || _powyx_error "theme.confirm is required"
+    _powyx_validate_toml_keys theme "confirm "
+    [[ "$POWYX_CONFIRM" =~ ^#[0-9A-Fa-f]{6}$ ]] || _powyx_error "theme.confirm must be #RRGGBB"
+}
+
+_powyx_read_toml_string() {
+    local section="$1"
+    local key="$2"
+
+    awk -v section="$section" -v key="$key" '
+        /^[[:space:]]*(#|$)/ {
+            next
+        }
+        $0 ~ "^[[:space:]]*\\[" section "\\][[:space:]]*$" {
+            in_section = 1
+            next
+        }
+        /^[[:space:]]*\[/ {
+            in_section = 0
+            next
+        }
+        in_section && $0 ~ "^[[:space:]]*" key "[[:space:]]*=" {
+            value = $0
+            sub("^[[:space:]]*" key "[[:space:]]*=[[:space:]]*\"", "", value)
+            sub("\"[[:space:]]*$", "", value)
+            print value
+            exit
+        }
+    ' "$POWYX_CONFIG_FILE"
+}
+
+_powyx_validate_toml_keys() {
+    local section="$1"
+    local expected="$2"
     local keys
 
-    keys="$(sed -n '/^[[:space:]]*\[actions\][[:space:]]*$/,$ s/^[[:space:]]*\([A-Za-z_][A-Za-z0-9_]*\)[[:space:]]*=.*/\1/p' "$POWYX_CONFIG_FILE" | sort | tr '\n' ' ')"
-    [[ "$keys" == "lock reboot shutdown suspend " ]] || _powyx_error "config actions must be exactly: lock, suspend, reboot, shutdown"
+    keys="$(_powyx_read_toml_keys "$section")"
+    [[ "$keys" == "$expected" ]] || _powyx_error "config $section keys are invalid"
+}
+
+_powyx_read_toml_keys() {
+    local section="$1"
+
+    awk -v section="$section" '
+        /^[[:space:]]*(#|$)/ {
+            next
+        }
+        
+        $0 ~ "^[[:space:]]*\\[" section "\\][[:space:]]*$" {
+            in_section = 1
+            next
+        }
+        /^[[:space:]]*\[/ {
+            in_section = 0
+            next
+        }
+        in_section && /^[[:space:]]*[A-Za-z_][A-Za-z0-9_]*[[:space:]]*=/ {
+            key = $0
+            sub("^[[:space:]]*", "", key)
+            sub("[[:space:]]*=.*$", "", key)
+            print key
+        }
+    ' "$POWYX_CONFIG_FILE" | sort | tr '\n' ' '
 }
 
 _powyx_dispatch_qml_exit_code() {
@@ -131,5 +188,4 @@ _powyx_run_action_command() {
 
     [[ -n "$command" ]] || _powyx_error "action command is empty"
     bash -lc -- "$command"
-    
 }
