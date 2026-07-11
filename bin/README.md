@@ -1,6 +1,8 @@
 # bin
 
-To run these binaries globally from any directory, add this folder to your path.
+To run these binaries globally from any directory, move this `/bin` folder to `~`.
+
+The [`~/.zshrc`](/config/.zshrc) file already sets this up and autosources any new binary at `~/bin`.
 
 ## Bins
 
@@ -14,4 +16,4 @@ wallpaper set <f> # Sets desktop to a specific image file
 wallpaper random # Applies a random wallpaper from your folder
 ```
 
-Standard `bash`.
+Uses standard `bash`.
