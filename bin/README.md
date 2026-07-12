@@ -80,7 +80,7 @@ Uses standard `bash`. No external dependencies.
 `./suspend` suspends the machine.
 
 ```bash
-suspend # Suspends the system
+suspend
 ```
 
 Just a `systemctl suspend` alias.

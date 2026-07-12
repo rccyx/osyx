@@ -15,6 +15,7 @@ OUTPUTS = {
     "dircolors.j2": ".dircolors",
     "hypr.conf.j2": ".config/hypr/theme.conf",
     "tmux.conf.j2": ".tmux.conf",
+    "powyx.toml.j2": ".config/powyx/powyx.toml",
     "wofi.css.j2": ".config/wofi/style.css",
     "gitconfig.j2": ".gitconfig.d/theme",
 }
