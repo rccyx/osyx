@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+read -r total used available < <(
+  df -h "$HOME" | awk 'NR == 2 { print $2, $3, $4 }'
+)
+
+printf '\033[32mTotal disk space is %s, with %s used and %s available.\033[0m\n' \
+  "$total" "$used" "$available"
