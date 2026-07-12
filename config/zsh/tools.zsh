@@ -15,22 +15,14 @@ export STARSHIP_CONFIG="$HOME/.config/starship.toml"
 
 # ─── FZF defaults ───
 export FZF_DEFAULT_COMMAND='fd --type f --hidden --exclude .git'
-export FZF_DEFAULT_OPTS=$'
-  --height 40%
+export FZF_DEFAULT_OPTS='
   --layout=reverse
-  --preview-window=:wrap
-  --preview "
-    mime=$(file --mime-type -Lb {})
-    if [[ $mime == text/* ]]; then
-      bat --style=plain --color=always {}
-    elif [[ $mime == image/* ]]; then
-      viu -w 40 -h 20 {}
-    elif [[ $mime == application/pdf ]]; then
-      pdftotext {} - | head -50
-    elif [[ $mime == audio/* ]]; then
-      exiftool {}
-    else
-      echo {} is $mime
-    fi
-  "
+  --border=rounded
+  --margin=2
+  --padding=1
+  --prompt=" "
+  --pointer="▶"
+  --marker="✓"
+  --preview-window=hidden
+  --color="bg+:-1,bg:-1,fg:-1,fg+:#ffffff,hl:#707070,hl+:#ffffff,header:bold:#909090,prompt:#ffffff,pointer:#ffffff,border:#404040"
 '

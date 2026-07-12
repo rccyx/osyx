@@ -94,3 +94,53 @@ hibernate
 ```
 
 Just a `systemctl hibernate` alias.
+
+**logout:**
+
+`./logout` safely logs out of the current desktop environment.
+
+```bash
+logout
+```
+
+Depends on `hyprshutdown`.
+
+**reboot:**
+
+`./reboot` safely reboots the machine.
+
+```bash
+reboot
+```
+
+Depends on `hyprshutdown`.
+
+**shutdown:**
+
+`./shutdown` safely shuts down and powers off the machine.
+
+```bash
+shutdown
+```
+
+Depends on `hyprshutdown`.
+
+**sync-time:**
+
+`./sync-time` restarts the network time synchronization service.
+
+```bash
+sync-time
+```
+
+Uses standard `bash`. Depends on `sudo` and `systemctl`.
+
+**timezone:**
+
+`./timezone` opens an interactive menu to set the system timezone.
+
+```bash
+timezone
+```
+
+Depends on `timedatectl`, `fzf`, and `sudo`.
