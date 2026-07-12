@@ -70,6 +70,13 @@ _G.ForceTransparent = function()
   end
 end
 
+local ok_vague, vague = pcall(require, "vague")
+if ok_vague then
+  vague.setup({
+    transparent = true,
+  })
+end
+
 local function _setup_scheme(scheme)
   local ok_catppuccin, catppuccin = pcall(require, "catppuccin")
   if ok_catppuccin then
@@ -161,6 +168,7 @@ local cycle_themes = {
   "kanagawa-dragon",
   "everforest",
   "rose-pine",
+  "vague",
 }
 
 local cycle_index = 1

@@ -21,6 +21,7 @@ Plug 'svrana/NeoSolarized.nvim'
 Plug 'rebelot/kanagawa.nvim'
 Plug 'sainnhe/everforest'
 Plug 'rose-pine/neovim'
+Plug 'vague-theme/vague.nvim'
 
 " ----- Helper Plugins -----
 Plug 'nvim-lua/plenary.nvim'
