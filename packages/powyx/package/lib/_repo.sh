@@ -28,6 +28,12 @@ _powyx_print_uninstall_plan() {
 _powyx_verify_install() {
     [[ -e "$POWYX_BIN_PATH" ]] || _powyx_error "binary install failed"
     [[ -x "$POWYX_BIN_PATH" ]] || _powyx_error "binary is not executable"
+    bash -n "$POWYX_BIN_PATH" || _powyx_error "installed binary failed syntax validation"
+
+    if grep -Fq 'source "$SCRIPT_DIR/lib/' "$POWYX_BIN_PATH"; then
+        _powyx_error "installed binary still depends on development libraries"
+    fi
+
     [[ -f "$POWYX_SHARE_DIR/src/Main.qml" ]] || _powyx_error "share Main.qml missing"
     [[ -d "$POWYX_SHARE_DIR/icons" ]] || _powyx_error "share icons directory missing"
     [[ -d "$POWYX_SHARE_DIR/config" ]] || _powyx_error "share config directory missing"

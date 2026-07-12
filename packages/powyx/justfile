@@ -29,3 +29,9 @@ s:
 
 r:
     {{QML_RUNNER}} src/Main.qml
+
+i: 
+    bash ./package/install
+
+u: 
+    bash ./package/uninstall
