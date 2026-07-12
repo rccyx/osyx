@@ -68,14 +68,8 @@ text = "8ed7cf"
 selected_bg = "01736c"
 selected_text = "00140e"
 
-[nvim]
-colorscheme = "gruvbox"
-bg = "00140e"
-fg = "8ed7cf"
-accent = "018a83"
-muted = "001e16"
-border = "002a24"
-cursorline = "00140e"
+[theme_names]
+nvim =  "gruvbox"
 
 [dircolors]
 dir = "00aaa4"

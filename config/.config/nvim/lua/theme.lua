@@ -1,13 +1,49 @@
 local M = {}
 
-M.palette = {
-  bg         = "#00140e",
-  fg         = "#8ed7cf",
-  accent     = "#018a83",
-  muted      = "#001e16",
-  border     = "#002a24",
-  cursorline = "#00140e",
-}
+local registry_file = vim.fn.expand("~/flavors/theme-names.toml")
+local fallback = "catppuccin"
+local last_mtime = 0
+
+local function _trim(value)
+  return (value:gsub("^%s+", ""):gsub("%s+$", ""))
+end
+
+local function _escape_pattern(value)
+  return value:gsub("([^%w])", "%%%1")
+end
+
+local function _read_app_theme(app)
+  local ok, lines = pcall(vim.fn.readfile, registry_file)
+
+  if not ok or #lines == 0 then
+    return fallback
+  end
+
+  local key = _escape_pattern(app)
+  local in_apps = false
+
+  for _, raw in ipairs(lines) do
+    local line = _trim(raw)
+
+    if line ~= "" and not line:match("^#") then
+      local section = line:match("^%[([^%]]+)%]$")
+
+      if section then
+        in_apps = section == "apps"
+      elseif in_apps then
+        local quoted = line:match('^"' .. key .. '"%s*=%s*"([^"]+)"%s*$')
+        local bare = line:match("^" .. key .. '%s*=%s*"([^"]+)"%s*$')
+        local value = quoted or bare
+
+        if value and _trim(value) ~= "" then
+          return _trim(value)
+        end
+      end
+    end
+  end
+
+  return fallback
+end
 
 _G.ForceTransparent = function()
   local groups = {
@@ -28,23 +64,13 @@ _G.ForceTransparent = function()
     "FloatBorder",
     "Pmenu",
   }
+
   for _, name in ipairs(groups) do
     pcall(vim.api.nvim_set_hl, 0, name, { bg = "NONE" })
   end
 end
 
---- Resolve which colorscheme to apply.
-local function resolve_scheme()
-  local scheme = "gruvbox"
-  if scheme == "" or string.sub(scheme, 1, 1) == "$" then
-    scheme = "catppuccin"
-  end
-  return scheme
-end
-
---- Apply the colorscheme and all transparency overrides.
-local function apply_scheme(scheme)
-  -- Setup transparent plugins
+local function _setup_scheme(scheme)
   local ok_catppuccin, catppuccin = pcall(require, "catppuccin")
   if ok_catppuccin then
     catppuccin.setup({
@@ -69,7 +95,7 @@ local function apply_scheme(scheme)
     rosepine.setup({
       styles = {
         transparency = true,
-      }
+      },
     })
   end
 
@@ -89,33 +115,43 @@ local function apply_scheme(scheme)
     vim.g.gruvbox_invert_selection = 0
     vim.g.gruvbox_transparent_bg = 1
   end
+end
 
-  local ok_colorscheme = pcall(vim.cmd.colorscheme, scheme)
-  if not ok_colorscheme then
-    pcall(vim.cmd.colorscheme, "catppuccin")
+function M.apply()
+  local scheme = _read_app_theme("nvim")
+
+  _setup_scheme(scheme)
+
+  local ok = pcall(vim.cmd.colorscheme, scheme)
+  if not ok and scheme ~= fallback then
+    pcall(vim.cmd.colorscheme, fallback)
   end
 
   ForceTransparent()
 end
 
---- Hot-reload entry point.
---- Busts the Lua module cache, re-reads theme.lua from disk, and re-applies.
-_G.ReloadTheme = function()
-  -- 1. Bust the cache so the next require() actually reads the file
-  package.loaded["theme"] = nil
-
-  -- 2. Re-require (picks up whatever generate.py just wrote)
-  local ok, fresh = pcall(require, "theme")
-  if not ok then
-    vim.notify("theme reload failed: " .. tostring(fresh), vim.log.levels.ERROR)
-  end
+function M.reload()
+  M.apply()
 end
 
--- Apply on first load
-local scheme = resolve_scheme()
-apply_scheme(scheme)
+function M.check()
+  local uv = vim.uv or vim.loop
+  local stat = uv.fs_stat(registry_file)
 
--- ─── Theme cycle (manual) ───────────────────────────────────
+  if not stat then
+    return
+  end
+
+  local mtime = stat.mtime.sec
+
+  if last_mtime > 0 and mtime ~= last_mtime then
+    M.reload()
+    vim.notify("theme flipped", vim.log.levels.INFO)
+  end
+
+  last_mtime = mtime
+end
+
 local cycle_themes = {
   "catppuccin",
   "dracula",
@@ -124,19 +160,51 @@ local cycle_themes = {
   "NeoSolarized",
   "kanagawa-dragon",
   "everforest",
-  "rose-pine"
+  "rose-pine",
 }
-local i = 1
+
+local cycle_index = 1
+
 _G.CycleTheme = function()
-  i = i % #cycle_themes + 1
-  local t = cycle_themes[i]
-  local ok = pcall(vim.cmd.colorscheme, t)
+  cycle_index = cycle_index % #cycle_themes + 1
+
+  local scheme = cycle_themes[cycle_index]
+
+  _setup_scheme(scheme)
+
+  local ok = pcall(vim.cmd.colorscheme, scheme)
   if ok then
     ForceTransparent()
-    print("theme: " .. t)
+    print("theme: " .. scheme)
   else
-    print("theme failed: " .. t)
+    print("theme failed: " .. scheme)
   end
+end
+
+_G.ReloadTheme = function()
+  M.reload()
+end
+
+function M.setup()
+  M.apply()
+  M.check()
+
+  vim.api.nvim_create_augroup("OsyxThemeFlip", { clear = true })
+
+  vim.api.nvim_create_autocmd("FocusGained", {
+    group = "OsyxThemeFlip",
+    callback = function()
+      M.check()
+    end,
+  })
+
+  vim.api.nvim_create_user_command("OsyxFlip", function()
+    M.reload()
+  end, { desc = "Reload OSyx app theme registry" })
+
+  vim.api.nvim_create_user_command("OsyxReloadTheme", function()
+    M.reload()
+  end, { desc = "Reload OSyx app theme registry" })
 end
 
 return M

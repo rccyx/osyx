@@ -332,6 +332,9 @@ apply(){
   if [[ "${OSYX_BOOTSTRAP_NEEDS_RELOGIN:-0}" == "1" ]]; then
     warn "relogin or reboot is required (groups/shell)"
   fi
+  
+  bash "$REPO_ROOT/bin/_install_"
+  bash "$REPO_ROOT/config/_install_"
 }
 
 fresh_root_stage(){

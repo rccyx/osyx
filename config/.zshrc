@@ -26,6 +26,19 @@ source "$HOME/zsh/_aliases.zsh"
 # Jarvis command center
 [ -f "$HOME/jarvis/entrypoint.zsh" ] && source "$HOME/jarvis/entrypoint.zsh"
 
+# This auto sources/execs everything in osyx root slash bin (add that folder to home if not added, bootstrap does it)
+# Whenever a new file is added, no need to chmod again
+export PATH="$HOME/bin:$PATH"
+
+for file in "$HOME/bin"/*(N.); do
+  case "${file:t}" in
+    README.md|_install_) continue ;;
+  esac
+
+  [[ -x "$file" ]] || chmod u+x -- "$file"
+done
+
+
 # Theme orchestrator (dircolors, live reload, themes function)
 source "$HOME/flavors/themes.zsh"
 

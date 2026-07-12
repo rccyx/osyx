@@ -233,7 +233,7 @@ _osyx_wallpaper_file() {
   local theme="$1"
   local ext
 
-  for ext in jpg png webp; do
+  for ext in jpg png jpeg webp; do
     if [[ -f "$_OSYX_BACKGROUNDS_DIR/$theme.$ext" ]]; then
       print -r -- "$_OSYX_BACKGROUNDS_DIR/$theme.$ext"
       return 0

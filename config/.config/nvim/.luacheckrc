@@ -14,11 +14,6 @@ new_globals = {
     "CycleTheme",
 }
 
--- Since theme.lua is generated, we'll be a bit more lenient with line lengths
-files["lua/theme.lua"] = {
-    ignore = { "631" }, -- Ignore max line length for the color palette tables
-}
-
 -- General ignores
 ignore = {
     "212", -- Unused argument (common in Neovim callbacks/autocmds)

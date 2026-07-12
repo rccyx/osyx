@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+
+cp -a "$DIR"/. "$HOME"/
+rm -f "$HOME/_install_" "$HOME/README.md"
