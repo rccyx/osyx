@@ -69,7 +69,7 @@ selected_bg = "01736c"
 selected_text = "00140e"
 
 [theme_names]
-nvim =  "gruvbox"
+nvim =  "terafox"
 
 [dircolors]
 dir = "00aaa4"

@@ -13,15 +13,14 @@ endif
 call plug#begin(stdpath('config') . '/plugged')
 
 " ----- Theme Plugins -----
-Plug 'Mofiqul/dracula.nvim'
-Plug 'catppuccin/nvim', { 'as': 'catppuccin' }
-Plug 'folke/tokyonight.nvim'
-Plug 'morhetz/gruvbox'
-Plug 'svrana/NeoSolarized.nvim'
-Plug 'rebelot/kanagawa.nvim'
 Plug 'sainnhe/everforest'
-Plug 'rose-pine/neovim'
+Plug 'morhetz/gruvbox'
+Plug 'ficcdaf/ashen.nvim'
+Plug 'folke/tokyonight.nvim'
+Plug 'EdenEast/nightfox.nvim'
 Plug 'vague-theme/vague.nvim'
+Plug 'rose-pine/neovim', { 'as': 'rose-pine' }
+Plug 'rebelot/kanagawa.nvim'
 
 " ----- Helper Plugins -----
 Plug 'nvim-lua/plenary.nvim'
@@ -45,7 +44,7 @@ Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 Plug 'nvim-treesitter/nvim-treesitter-textobjects'
-Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.x' }
+Plug 'nvim-telescope/telescope.nvim', { 'tag': 'v0.1.9' }
 Plug 'nvim-telescope/telescope-file-browser.nvim'
 Plug 'windwp/nvim-autopairs'
 Plug 'windwp/nvim-ts-autotag'
@@ -82,7 +81,7 @@ lua << EOF
 pcall(function()
   vim.treesitter.language.register('tsx', 'typescriptreact')
   vim.treesitter.language.register('javascript', 'javascriptreact')
-  
+
   local parsers = require("nvim-treesitter.parsers")
   if not parsers.ft_to_lang then
     parsers.ft_to_lang = function(ft)

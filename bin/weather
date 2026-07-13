@@ -1,0 +1,3 @@
+#!/bin/bash
+
+curl -s "wttr.in/?0"

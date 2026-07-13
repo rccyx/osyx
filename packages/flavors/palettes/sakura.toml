@@ -69,7 +69,7 @@ selected_bg = "e08098"
 selected_text = "080e18"
 
 [theme_names]
-nvim =  "kanagawa-dragon"
+nvim =  "rose-pine"
 
 [dircolors]
 dir = "fcd8e4"

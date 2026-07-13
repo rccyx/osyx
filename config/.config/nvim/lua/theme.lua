@@ -1,7 +1,7 @@
 local M = {}
 
 local registry_file = vim.fn.expand("~/flavors/theme-names.toml")
-local fallback = "catppuccin"
+local fallback = "vague"
 local last_mtime = 0
 
 local function _trim(value)
@@ -49,17 +49,23 @@ _G.ForceTransparent = function()
   local groups = {
     "Normal",
     "NormalFloat",
+    "NormalNC",
     "SignColumn",
     "LineNr",
     "CursorLineNr",
+    "FoldColumn",
     "Folded",
+    "EndOfBuffer",
     "MsgArea",
     "ColorColumn",
     "WinSeparator",
     "TelescopeNormal",
     "TelescopeBorder",
+    "TelescopePromptNormal",
     "TelescopePromptBorder",
+    "TelescopeResultsNormal",
     "TelescopeResultsBorder",
+    "TelescopePreviewNormal",
     "TelescopePreviewBorder",
     "FloatBorder",
     "Pmenu",
@@ -70,57 +76,97 @@ _G.ForceTransparent = function()
   end
 end
 
-local ok_vague, vague = pcall(require, "vague")
-if ok_vague then
-  vague.setup({
-    transparent = true,
-  })
-end
-
 local function _setup_scheme(scheme)
-  local ok_catppuccin, catppuccin = pcall(require, "catppuccin")
-  if ok_catppuccin then
-    catppuccin.setup({
-      transparent_background = true,
-      integrations = {
-        treesitter = true,
-        coc_nvim = true,
-        native_lsp = { enabled = true },
-      },
-    })
-  end
-
-  local ok_kanagawa, kanagawa = pcall(require, "kanagawa")
-  if ok_kanagawa then
-    kanagawa.setup({
-      transparent = true,
-    })
-  end
-
-  local ok_rosepine, rosepine = pcall(require, "rose-pine")
-  if ok_rosepine then
-    rosepine.setup({
-      styles = {
-        transparency = true,
-      },
-    })
-  end
-
-  local ok_tokyonight, tokyonight = pcall(require, "tokyonight")
-  if ok_tokyonight then
-    tokyonight.setup({
-      transparent = true,
-    })
-  end
-
-  if scheme:match("everforest") then
+  if scheme == "everforest" then
     vim.g.everforest_transparent_background = 2
+    return
   end
 
   if scheme == "gruvbox" then
     vim.g.gruvbox_contrast_dark = "medium"
     vim.g.gruvbox_invert_selection = 0
-    vim.g.gruvbox_transparent_bg = 1
+    return
+  end
+
+  if scheme == "ashen" then
+    local ok, ashen = pcall(require, "ashen")
+
+    if ok then
+      ashen.setup({
+        transparent = true,
+      })
+    end
+
+    return
+  end
+
+  if scheme == "tokyonight" or scheme:match("^tokyonight%-") then
+    local ok, tokyonight = pcall(require, "tokyonight")
+
+    if ok then
+      tokyonight.setup({
+        style = "night",
+        transparent = true,
+        styles = {
+          sidebars = "transparent",
+          floats = "transparent",
+        },
+      })
+    end
+
+    return
+  end
+
+  if scheme == "terafox" then
+    local ok, nightfox = pcall(require, "nightfox")
+
+    if ok then
+      nightfox.setup({
+        options = {
+          transparent = true,
+        },
+      })
+    end
+
+    return
+  end
+
+  if scheme == "vague" then
+    local ok, vague = pcall(require, "vague")
+
+    if ok then
+      vague.setup({
+        transparent = true,
+      })
+    end
+
+    return
+  end
+
+  if scheme == "rose-pine" or scheme:match("^rose%-pine%-") then
+    local ok, rosepine = pcall(require, "rose-pine")
+
+    if ok then
+      rosepine.setup({
+        variant = "moon",
+        dark_variant = "moon",
+        styles = {
+          transparency = true,
+        },
+      })
+    end
+
+    return
+  end
+
+  if scheme == "kanagawa" or scheme:match("^kanagawa%-") then
+    local ok, kanagawa = pcall(require, "kanagawa")
+
+    if ok then
+      kanagawa.setup({
+        transparent = true,
+      })
+    end
   end
 end
 
@@ -130,7 +176,9 @@ function M.apply()
   _setup_scheme(scheme)
 
   local ok = pcall(vim.cmd.colorscheme, scheme)
+
   if not ok and scheme ~= fallback then
+    _setup_scheme(fallback)
     pcall(vim.cmd.colorscheme, fallback)
   end
 
@@ -160,15 +208,14 @@ function M.check()
 end
 
 local cycle_themes = {
-  "catppuccin",
-  "dracula",
-  "gruvbox",
-  "tokyonight",
-  "NeoSolarized",
-  "kanagawa-dragon",
   "everforest",
-  "rose-pine",
+  "gruvbox",
+  "ashen",
+  "tokyonight",
+  "terafox",
   "vague",
+  "rose-pine",
+  "kanagawa-dragon",
 }
 
 local cycle_index = 1
@@ -181,6 +228,7 @@ _G.CycleTheme = function()
   _setup_scheme(scheme)
 
   local ok = pcall(vim.cmd.colorscheme, scheme)
+
   if ok then
     ForceTransparent()
     print("theme: " .. scheme)

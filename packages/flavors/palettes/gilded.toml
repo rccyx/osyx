@@ -71,7 +71,7 @@ selected_text = "0b0d0a"
 
 
 [theme_names]
-nvim = "catppuccin"
+nvim = "gruvbox"
 
 [dircolors]
 dir = "d19a45"
