@@ -25,7 +25,6 @@ Plug 'rebelot/kanagawa.nvim'
 " ----- Helper Plugins -----
 Plug 'nvim-lua/plenary.nvim'
 Plug 'tpope/vim-surround'
-Plug 'preservim/nerdtree'
 Plug 'junegunn/goyo.vim'
 Plug 'jreybert/vimagit'
 Plug 'vimwiki/vimwiki'
@@ -35,12 +34,9 @@ Plug 'scrooloose/nerdcommenter'
 Plug 'sheerun/vim-polyglot'
 Plug 'tpope/vim-fugitive'
 Plug 'vim-scripts/indentpython.vim'
-Plug 'Xuyuanp/nerdtree-git-plugin'
-Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
-Plug 'PhilRunninger/nerdtree-visual-selection'
 Plug 'SirVer/ultisnips' | Plug 'honza/vim-snippets'
 Plug 'tpope/vim-fireplace', { 'for': 'clojure' }
-Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'junegunn/fzf'
 Plug 'junegunn/fzf.vim'
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 Plug 'nvim-treesitter/nvim-treesitter-textobjects'
