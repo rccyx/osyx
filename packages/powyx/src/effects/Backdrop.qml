@@ -59,7 +59,6 @@ Item {
         id: dismissArea
         anchors.fill: parent
         z: -1
-        onClicked: backdrop.dismissed()
     }
 
     Component.onCompleted: overlay.opacity = Style.effects.backdropOpacity
