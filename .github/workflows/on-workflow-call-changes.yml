@@ -2,56 +2,92 @@ name: changes
 
 on:
   workflow_call:
+    inputs:
+      directory:
+        description: repository-relative directory to watch
+        required: true
+        type: string
+      ignore_docs:
+        description: skip when only documentation changed
+        required: true
+        type: boolean
     outputs:
-      non_docs:
-        description: "true if the triggering commit changed any non-documentation files"
-        value: ${{ jobs.detect.outputs.non_docs }}
+      changed:
+        description: true when the directory has a relevant change
+        value: ${{ jobs.detect.outputs.changed }}
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
   detect:
     runs-on: ubuntu-latest
     outputs:
-      non_docs: ${{ steps.detect.outputs.non_docs }}
+      changed: ${{ steps.select.outputs.changed }}
+
     steps:
-      - name: checkout pull request head commit
-        if: github.event_name == 'pull_request'
+      - name: checkout
         uses: actions/checkout@v4
         with:
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 2
+          fetch-depth: 0
 
-      - name: checkout push commit
-        if: github.event_name != 'pull_request'
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.sha }}
-          fetch-depth: 2
-
-      - name: detect non-docs changes
-        id: detect
+      - name: build path filters
+        id: patterns
         shell: bash
+        env:
+          DIRECTORY: ${{ inputs.directory }}
         run: |
           set -euo pipefail
 
-          non_docs=false
+          directory="${DIRECTORY#./}"
+          directory="${directory#/}"
+          directory="${directory%/}"
 
-          while IFS= read -r path; do
-            case "${path}" in
-              README.md | \
-              LICENSE | \
-              docs/* | \
-              *.md | \
-              *.txt)
-                ;;
-              *)
-                non_docs=true
-                break
-                ;;
-            esac
-          done < <(git diff-tree --no-commit-id --name-only -r --root HEAD)
+          if [[ -z "${directory}" || "${directory}" == "." ]]; then
+            scope="**"
+          else
+            scope="${directory}/**"
+          fi
 
-          echo "non_docs=${non_docs}" >>"${GITHUB_OUTPUT}"
+          {
+            echo "filters<<EOF"
+            echo "all:"
+            printf "  - '%s'\n" "${scope}"
+            echo "non_docs:"
+            printf "  - '%s'\n" "${scope}"
+
+            if [[ "${scope}" == "**" ]]; then
+              echo "  - '!**/*.md'"
+              echo "  - '!**/*.mdx'"
+              echo "  - '!**/docs/**'"
+            else
+              printf "  - '!%s/**/*.md'\n" "${directory}"
+              printf "  - '!%s/**/*.mdx'\n" "${directory}"
+              printf "  - '!%s/**/docs/**'\n" "${directory}"
+            fi
+
+            echo "EOF"
+          } >>"${GITHUB_OUTPUT}"
+
+      - name: detect directory changes
+        id: filter
+        uses: dorny/paths-filter@v4
+        with:
+          filters: ${{ steps.patterns.outputs.filters }}
+
+      - name: select result
+        id: select
+        shell: bash
+        env:
+          ALL_CHANGED: ${{ steps.filter.outputs.all }}
+          NON_DOCS_CHANGED: ${{ steps.filter.outputs.non_docs }}
+          IGNORE_DOCS: ${{ inputs.ignore_docs }}
+        run: |
+          set -euo pipefail
+
+          if [[ "${IGNORE_DOCS}" == "true" ]]; then
+            echo "changed=${NON_DOCS_CHANGED}" >>"${GITHUB_OUTPUT}"
+          else
+            echo "changed=${ALL_CHANGED}" >>"${GITHUB_OUTPUT}"
+          fi

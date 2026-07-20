@@ -3,6 +3,7 @@ POWYX_DEBIAN_PACKAGES=(
     qml6-module-qtquick
     qml6-module-qtquick-window
     qml6-module-qtquick-layouts
+    qml6-module-qt5compat-graphicaleffects
     libqt6svg6
 )
 

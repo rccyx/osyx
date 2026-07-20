@@ -1,0 +1,85 @@
+name: powyx
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: check install uninstall
+    runs-on: ubuntu-latest
+
+    container:
+      image: debian:trixie
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: packages/powyx
+
+    env:
+      DEBIAN_FRONTEND: noninteractive
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: install check dependencies
+        run: |
+          set -euo pipefail
+
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            bash \
+            ca-certificates \
+            git \
+            just \
+            shellcheck \
+            qt6-declarative-dev-tools \
+            qt6-qmllint-plugins
+          rm -rf /var/lib/apt/lists/*
+
+          for tool in qmlformat qmllint; do
+            path="$(command -v "${tool}" 2>/dev/null || true)"
+
+            if [[ -z "${path}" ]]; then
+              path="$(find /usr -type f -path '*/qt6/bin/*' -name "${tool}" -print -quit)"
+            fi
+
+            [[ -n "${path}" ]]
+            ln -sf "${path}" "/usr/local/bin/${tool}"
+          done
+
+      - name: QML format
+        run: just fc
+
+      - name: QML lint
+        run: just l
+
+      - name: shellcheck
+        run: just s
+
+      - name: install
+        run: ./package/install
+
+      - name: verify install
+        run: |
+          set -euo pipefail
+
+          test -x "${HOME}/.local/bin/powyx"
+          test -f "${HOME}/.config/powyx/powyx.toml"
+          test -f "${HOME}/.local/share/powyx/src/Main.qml"
+
+      - name: uninstall
+        run: ./package/uninstall
+
+      - name: verify uninstall
+        run: |
+          set -euo pipefail
+
+          test ! -e "${HOME}/.local/bin/powyx"
+          test ! -e "${HOME}/.local/share/powyx"
+          test -f "${HOME}/.config/powyx/powyx.toml"

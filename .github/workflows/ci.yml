@@ -16,6 +16,7 @@ concurrency:
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
   secrets:
@@ -25,39 +26,53 @@ jobs:
 
   changes:
     uses: ./.github/workflows/on-workflow-call-changes.yml
+    with:
+      directory: .
+      ignore_docs: true
+
+  powyx-changes:
+    uses: ./.github/workflows/on-workflow-call-changes.yml
+    with:
+      directory: packages/powyx
+      ignore_docs: true
+
+  powyx:
+    needs: powyx-changes
+    if: needs.powyx-changes.outputs.changed == 'true'
+    uses: ./.github/workflows/on-workflow-call-powyx.yml
 
   lint:
     needs: [secrets, changes]
-    if: needs.changes.outputs.non_docs == 'true'
+    if: needs.changes.outputs.changed == 'true'
     uses: ./.github/workflows/on-workflow-call-lint.yml
 
   submodules:
     needs: [secrets, changes]
-    if: needs.changes.outputs.non_docs == 'true'
+    if: needs.changes.outputs.changed == 'true'
     uses: ./.github/workflows/on-workflow-call-submodule-integrity.yml
     secrets: inherit
 
   nix:
     needs: [secrets, changes]
-    if: needs.changes.outputs.non_docs == 'true'
+    if: needs.changes.outputs.changed == 'true'
     uses: ./.github/workflows/on-workflow-call-nix.yml
 
   duplicates:
     needs: [secrets, changes]
-    if: needs.changes.outputs.non_docs == 'true'
+    if: needs.changes.outputs.changed == 'true'
     uses: ./.github/workflows/on-workflow-call-duplicate-configs.yml
 
   forbidden:
     needs: [secrets, changes]
-    if: needs.changes.outputs.non_docs == 'true'
+    if: needs.changes.outputs.changed == 'true'
     uses: ./.github/workflows/on-workflow-call-forbidden-blobs.yml
 
   bootstrap:
     needs: [secrets, changes]
-    if: needs.changes.outputs.non_docs == 'true'
+    if: needs.changes.outputs.changed == 'true'
     uses: ./.github/workflows/on-workflow-call-bootstrap.yml
 
   apps:
     needs: [secrets, changes]
-    if: needs.changes.outputs.non_docs == 'true'
+    if: needs.changes.outputs.changed == 'true'
     uses: ./.github/workflows/on-workflow-call-apps.yml
