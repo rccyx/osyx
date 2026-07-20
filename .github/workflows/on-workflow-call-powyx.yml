@@ -1,4 +1,4 @@
-name: powyx
+name: power menu testing suite
 
 on:
   workflow_dispatch:
@@ -8,8 +8,8 @@ permissions:
   contents: read
 
 jobs:
-  check:
-    name: check install uninstall
+  integration:
+    name: full integration
     runs-on: ubuntu-latest
 
     container:
@@ -27,7 +27,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
 
-      - name: install check dependencies
+      - name: install testing dependencies
         run: |
           set -euo pipefail
 
@@ -38,8 +38,10 @@ jobs:
             git \
             just \
             shellcheck \
+            qml-qt6 \
             qt6-declarative-dev-tools \
             qt6-qmllint-plugins
+
           rm -rf /var/lib/apt/lists/*
 
           for tool in qmlformat qmllint; do
@@ -53,14 +55,20 @@ jobs:
             ln -sf "${path}" "/usr/local/bin/${tool}"
           done
 
+          command -v qml6
+          command -v qmlformat
+          command -v qmllint
+          command -v shellcheck
+          command -v just
+
+      - name: shellcheck
+        run: just s
+
       - name: QML format
         run: just fc
 
       - name: QML lint
         run: just l
-
-      - name: shellcheck
-        run: just s
 
       - name: install
         run: ./package/install
