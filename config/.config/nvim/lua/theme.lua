@@ -99,7 +99,7 @@ local function _setup_scheme(scheme)
   end
 
   if nightfox_schemes[scheme] then
-  local ok, nightfox = pcall(require, "nightfox")
+    local ok, nightfox = pcall(require, "nightfox")
     if ok then
       nightfox.setup({
         options = {
@@ -136,9 +136,8 @@ local function _setup_scheme(scheme)
     return
   end
 
-
   if scheme == "mellifluous" then
-  local ok, mellifluous = pcall(require, "mellifluous")
+    local ok, mellifluous = pcall(require, "mellifluous")
 
     if ok then
       mellifluous.setup({
@@ -153,7 +152,7 @@ local function _setup_scheme(scheme)
         },
       })
     end
-    return  
+    return
   end
 
   if scheme == "tokyonight" or scheme:match("^tokyonight%-") then
