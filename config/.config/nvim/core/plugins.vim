@@ -21,6 +21,10 @@ Plug 'EdenEast/nightfox.nvim'
 Plug 'vague-theme/vague.nvim'
 Plug 'rose-pine/neovim', { 'as': 'rose-pine' }
 Plug 'rebelot/kanagawa.nvim'
+Plug 'savq/melange-nvim'
+Plug 'EdenEast/nightfox.nvim'
+Plug 'ramojus/mellifluous.nvim'
+Plug 'EdenEast/nightfox.nvim'
 
 " ----- Helper Plugins -----
 Plug 'nvim-lua/plenary.nvim'

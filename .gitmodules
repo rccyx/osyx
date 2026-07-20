@@ -6,3 +6,15 @@
     path = packages/hyprtryx
   	url = https://github.com/rccyx/hyprtryx.git
 
+[submodule "thyx"]
+    path = packages/thyx
+  	url = https://github.com/rccyx/thyx.git
+
+[submodule "lookas"]
+    path = packages/lookas
+  	url = https://github.com/rccyx/lookas.git
+
+[submodule "asryx"]
+    path = packages/asryx
+  	url = https://github.com/rccyx/asryx.git
+

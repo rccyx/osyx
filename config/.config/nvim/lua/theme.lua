@@ -76,6 +76,16 @@ _G.ForceTransparent = function()
   end
 end
 
+local nightfox_schemes = {
+  nightfox = true,
+  dayfox = true,
+  dawnfox = true,
+  duskfox = true,
+  nordfox = true,
+  terafox = true,
+  carbonfox = true,
+}
+
 local function _setup_scheme(scheme)
   if scheme == "everforest" then
     vim.g.everforest_transparent_background = 2
@@ -85,6 +95,32 @@ local function _setup_scheme(scheme)
   if scheme == "gruvbox" then
     vim.g.gruvbox_contrast_dark = "medium"
     vim.g.gruvbox_invert_selection = 0
+    return
+  end
+
+  if nightfox_schemes[scheme] then
+  local ok, nightfox = pcall(require, "nightfox")
+    if ok then
+      nightfox.setup({
+        options = {
+          transparent = true,
+          terminal_colors = true,
+          dim_inactive = false,
+          styles = {
+            comments = "NONE",
+            conditionals = "NONE",
+            constants = "NONE",
+            functions = "NONE",
+            keywords = "NONE",
+            numbers = "NONE",
+            operators = "NONE",
+            strings = "NONE",
+            types = "NONE",
+            variables = "NONE",
+          },
+        },
+      })
+    end
     return
   end
 
@@ -98,6 +134,26 @@ local function _setup_scheme(scheme)
     end
 
     return
+  end
+
+
+  if scheme == "mellifluous" then
+  local ok, mellifluous = pcall(require, "mellifluous")
+
+    if ok then
+      mellifluous.setup({
+        colorset = "alduin",
+        transparent_background = {
+          enabled = true,
+          floating_windows = true,
+          telescope = true,
+          file_tree = true,
+          cursor_line = true,
+          status_line = false,
+        },
+      })
+    end
+    return  
   end
 
   if scheme == "tokyonight" or scheme:match("^tokyonight%-") then
@@ -213,9 +269,12 @@ local cycle_themes = {
   "ashen",
   "tokyonight",
   "terafox",
+  "nightfox",
+  "duskfox",
   "vague",
   "rose-pine",
   "kanagawa-dragon",
+  "melange",
 }
 
 local cycle_index = 1
