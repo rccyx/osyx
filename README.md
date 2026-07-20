@@ -50,7 +50,7 @@
 </div>
 
 > [!IMPORTANT]
-> This is not a distro, nor a pile of dots. No one command install yet, but, you can already pull individual pieces (the theming setup, the login screen, the standalone tools) and run them today. See [Can I use this today?](#can-i-use-this-today)
+> This is still in beta, there's no one command install yet, but, you can already pull individual pieces (the theming setup, the login screen, the standalone tools) and run them today. See [Can I use this today?](#can-i-use-this-today)
 
 ## TL;DR
 
@@ -60,19 +60,22 @@ Bare Debian as in, starts off without even having `sudo`, plain blank TTY. I bro
 
 I wanted something that behaves like a hardened HUD, but keeps a premium aesthetic.
 
+> [!IMPORTANT]
+> This is not a pile of dots, nor is it yet another "distro". Here's [why](#isos-dots-issue--custom-tooling)
+
 ### Layers
 
-The system builds itself in layers so it stays incredibly lightweight, bloat free, and completely reproducible:
+The system builds itself in layers so it's incredibly lightweight, bloat free, and completely reproducible.
 
-Provisioning scripts, generated configs, custom tools, cohesive theming, and CI verification checks turn a blank TTY all into a keyboard driven workstation.
+It consists of provisioning scripts, generated configs, [custom tools](#isos-dots-issue--custom-tooling), cohesive [theming](./packages/flavors/), and [CI](.github/workflows/ci.yml) verification checks turn a blank TTY all into a [keyboard](#jarvis-unreleased) driven workstation.
 
 ### Design
 
 Good design is invisible.
 
-The problem with modern consumer interfaces is they're built for passive consumption and generic consumer convenience:
+My problem with modern consumer interfaces is that they're built for passive consumption and generic consumer convenience.
 
-Bloated menus, icons everywhere, flashy drop downs and apps, 55 choices to choose from, and so on. All to guide a standard user.
+Bloated menus, icons everywhere, flashy drop downs, too many built in apps, 55 choices to choose from, and so on. All to guide a "standard" user.
 
 Here, all that is nuked, all of it. Not even the top bar exists, and [here's why](#no-top-bar-and-why).
 
@@ -100,7 +103,9 @@ When this is done, basically all you need is a USB stick and `curl`.
 
 You run it, and minutes later a completely empty machine morphs into this exact hyper optimized workstation.
 
-Totally disposable, and reproducible. No ISO needed.
+Totally disposable and reproducible. No ISO needed.
+
+Speaking of ISOs:
 
 ### ISOs, Dots issue & custom tooling
 
@@ -112,25 +117,27 @@ Dotfiles imply a bunch of config files that may or may not work.
 
 Usually, it's an enormous set of files that look intimidating, but don't really do much by themselves, and don't talk to each other.
 
-You'd have these Frankenstein repos that barely work on the creator's machine, let alone yours, and they're only good for screenshots. There's no cohesion whatsoever. You'd see Alacritty, Ghostty, and Kitty configs, but none of them is slightly workable or even fits the other programs.
+You'd have these Frankenstein repos that barely work on the creator's machine, let alone yours, and they're only good for screenshots. There's no cohesion whatsoever. You'll see Alacritty, Ghostty, and Kitty configs, but none of them is slightly workable or even fits the other programs.
 
 Here, if a program doesn't fit, I just make a custom made one that's just suited for this whole setup.
 
-For example, CAVA is too twitchy for the frequency visualizer. So I built my own custom visualizer that fits how humans hear sound, not twitchy.
+For example, CAVA is too twitchy for the frequency visualizer. So I built my own [custom visualizer](#lookas) that fits how humans hear sound, not twitchy.
 
 I also have my own Hyprland builder. Why? Because the current ecosystem doesn't have a good Hyprland builder, it's either bloated or bloated.
 
-Same for the login theme. And so on.
+Same for the [login](#thyx). And so on.
 
 ### Private -> Public
 
-My private setup is further ahead, and I'm busy, so parts only become public when they're stable enough, which takes a little bit of time. I can't release something half portable. So when something is public, it's tested thoroughly and documented enough that you can fork it, use it, or fix it yourself.
+My private setup is further ahead. Parts only become public when they're stable enough, which takes a little bit of time.
+
+I can't release something half portable. So when something is public, it's tested thoroughly and documented enough that you can fork it, use it, or fix it yourself.
 
 For example, [thyx](https://github.com/rccyx/thyx) existed since 2024, but was only open sourced in June 2026 when I got the CI/CD matrix to work on Arch, Debian, Nix, Fedora, and more.
 
 ## Stack
 
-These basically never change, only updated when it makes sense.
+These never change (only updated).
 
 | Layer                | What                                                                           |
 | -------------------- | ------------------------------------------------------------------------------ |
@@ -159,7 +166,7 @@ The full public one command install is not available yet, so the way to go by th
 
 If you already have the core programs like Hypr, tmux, starship, etc, you can achieve the exact same look as the demos.
 
-Still, the repo exposes the portable surface, that I'll keep adding to:
+The repo exposes a portable surface:
 
 ```text
 osyx/
@@ -172,9 +179,9 @@ osyx/
 └── .github/        CI, repo checks, image builds, and automation
 ```
 
-Pure dotfiles are under [config/](./config), although the surface area for dots here is tiny, and many files are generated by the auto flavoring setup.
+Pure dotfiles are under [config/](./config), although the surface area for dots here is tiny, and many files are AUTO generated by the flavors engine.
 
-Mako for example is entirely auto generated, while Hyprland only reads an auto generated `theme.conf` while the rest is static.
+Mako config for example is entirely auto generated, while Hyprland only reads an auto generated `theme.conf` while the rest is static.
 
 ## Docs
 
@@ -206,7 +213,7 @@ cargo install lookas && lookas
 
 Pure C++ voice to text binary for Linux, done the UNIX way. No dependencies beyond the standard C++ and Linux toolchain.
 
-It links to GGML Whisper (local), records through the active Linux audio stack, transcribes locally, copies the output, notifies the session, and exits.
+It links to GGML Whisper (100% offline), records through the active Linux audio stack, transcribes locally, copies the output, notifies the session, and exits.
 
 Tap once, speak for as long as you want, tap again, that's it. Basically never errors out, and it comes in handy in a keyboard only workflow. Supports 99 languages through the model weights.
 
@@ -251,27 +258,37 @@ The workflow is split between global keybinds and the CLI. No start menus, dropd
 
 And so on, till the keys run out.
 
-### The CLI
+But the prime real estate ran out a long time ago, so the CLI handles the rest
 
-The CLI is the system control layer, and it's what makes this setup usable as a workstation.
+### CLI
 
-You saw the keybinds, but the prime real estate ran out a long time ago, so the CLI handles the rest. That's [Jarvis](https://en.wikipedia.org/wiki/J.A.R.V.I.S.).
+This is the system control layer. That's [Jarvis](https://en.wikipedia.org/wiki/J.A.R.V.I.S.).
 
 Most tasks are handled through `fzf` autocompletion, as there's only so much one can remember.
 
 This includes everything from encryption, 2FA codes, network management, cloud analysis, reminders, syncing packages across Rust, TypeScript, Go, Python, APT, and whatever else, to Git ops, pull request management, reviews, submits, ISO flashing, video editing, audio routing, and much more.
 
-It covers basically anything that doesn't really require a full blown GUI to use. Which if you think about it, what does really require a full blown GUI?
+It covers basically anything that doesn't really require a full blown GUI to use.
+
+Which if you think about it, what does really require a full blown GUI?
 
 But, speaking of GUIs: apps behave like native apps. For example, `app sc` launches SoundCloud, with Hyprland: `Super + F` for fullscreen, and `Super + Q` to quit. It's significantly faster than fumbling with browser tabs and saves seconds of friction every time.
 
 ### Boot to desktop
 
-All programs launch in their correct workspaces on boot. Hit the power button, wait for boot, tap the fingerprint sensor, and everything spawns up instantly. No action needed. `Super + 3`, three terminals already open, tmux'ed sessions on the right one, the [visualizer](https://github.com/rccyx/lookas) on the bottom right, and a misc terminal on the top right.
+All programs launch in their correct workspaces on boot. Hit the power button, wait for boot, tap the fingerprint sensor, and everything spawns up instantly.
+
+No action needed.
+
+`Super + 3`, three terminals already open, tmux'ed sessions on the right one, the [visualizer](https://github.com/rccyx/lookas) on the bottom right, and a misc terminal on the top right.
 
 ### Workspaces never move
 
-Workspaces are always in the same position. They never change. `Super + 1` is workspace one, always notes. `Super + 9` is reserved for background focus music with `app yt` (YouTube). To move laterally, `Alt + Ctrl + Arrows`.
+Workspaces are always in the same position. They never change. `Super + 1` is workspace one, always notes.
+
+`Super + 9` is reserved for background focus music with `app yt` (YouTube).
+
+To move laterally, `Alt + Ctrl + Arrows`.
 
 ### No top bar, and why
 
@@ -283,13 +300,15 @@ Starship already tells time. Event driven notifications surface critical system 
 
 Why would I watch the battery sit at 97%? Keep getting anxious when it'll be 55% or lower? The internet always works, and even if it cuts out, I get notified.
 
-Battery for example, I get notified at 50%, 33%, 25%, 15%; 10%, 5%. Same with thermals, machine normally stays within a threshold, if it climbs past that, I get notified.
+The battery for example, I get notified at 50%, 33%, 25%, 15%; 10%, 5%. Same with thermals, the machine normally stays within a threshold, if it climbs past that, I get notified.
 
 **Everything that needs to be seen surfaces only when it needs to be seen.**
 
 Why would I need to know which workspace I'm in? I just know. `Super + 1` is notes, `Super + 2` is the browser. Never changes. A workspace indicator is redundant.
 
-Why would I have a calendar in my tray? I use Google Calendar. Why would I have some random GUI that doesn't even link to anything? Can you book meetings on it? No. Does it have years of data on it? No. So `app cal` launches Google Calendar as a native app.
+Why would I have a calendar in my tray? I use Google Calendar.
+
+Why would I have some random GUI that doesn't even link to anything? Can you book meetings on it? No. Does it have years of data on it? No. So `app cal` launches Google Calendar as a native app.
 
 ### Idempotent by design
 
@@ -341,8 +360,6 @@ Send it.
 
 Hibernate now.
 ```
-
-I genuinely don't like typing.
 
 ## License
 
