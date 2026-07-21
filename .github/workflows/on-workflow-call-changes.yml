@@ -7,36 +7,50 @@ on:
         description: repository-relative directory to watch
         required: true
         type: string
+
       ignore_docs:
         description: skip when only documentation changed
         required: true
         type: boolean
+
     outputs:
       changed:
-        description: true when the directory has a relevant change
+        description: true when the current update changed a relevant file
         value: ${{ jobs.detect.outputs.changed }}
 
 permissions:
   contents: read
-  pull-requests: read
 
 jobs:
   detect:
     runs-on: ubuntu-latest
+
     outputs:
-      changed: ${{ steps.select.outputs.changed }}
+      changed: ${{ steps.detect.outputs.changed }}
 
     steps:
       - name: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
-      - name: build path filters
-        id: patterns
+      - name: detect changes
+        id: detect
         shell: bash
         env:
           DIRECTORY: ${{ inputs.directory }}
+          IGNORE_DOCS: ${{ inputs.ignore_docs }}
+
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_ACTION: ${{ github.event.action }}
+
+          EVENT_BEFORE: ${{ github.event.before }}
+          EVENT_AFTER: ${{ github.event.after }}
+
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+
+          CURRENT_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
 
@@ -44,50 +58,85 @@ jobs:
           directory="${directory#/}"
           directory="${directory%/}"
 
-          if [[ -z "${directory}" || "${directory}" == "." ]]; then
-            scope="**"
+          base=""
+          head=""
+
+          case "${EVENT_NAME}" in
+            pull_request)
+              head="${PR_HEAD_SHA}"
+
+              if [[ "${EVENT_ACTION}" == "synchronize" ]]; then
+                if [[ -n "${EVENT_BEFORE}" && ! "${EVENT_BEFORE}" =~ ^0+$ ]]; then
+                  base="${EVENT_BEFORE}"
+                elif git rev-parse "${head}^" >/dev/null 2>&1; then
+                  base="$(git rev-parse "${head}^")"
+                fi
+              else
+                base="${PR_BASE_SHA}"
+              fi
+              ;;
+
+            push)
+              head="${EVENT_AFTER:-${CURRENT_SHA}}"
+
+              if [[ -n "${EVENT_BEFORE}" && ! "${EVENT_BEFORE}" =~ ^0+$ ]]; then
+                base="${EVENT_BEFORE}"
+              fi
+              ;;
+
+            *)
+              head="${CURRENT_SHA}"
+
+              if git rev-parse "${head}^" >/dev/null 2>&1; then
+                base="$(git rev-parse "${head}^")"
+              fi
+              ;;
+          esac
+
+          if [[ -n "${base}" ]]; then
+            mapfile -t changed_files < <(
+              git diff \
+                --name-only \
+                --diff-filter=ACDMRTUXB \
+                "${base}" \
+                "${head}"
+            )
           else
-            scope="${directory}/**"
+            mapfile -t changed_files < <(
+              git diff-tree \
+                --root \
+                --no-commit-id \
+                --name-only \
+                -r \
+                "${head}"
+            )
           fi
 
-          {
-            echo "filters<<EOF"
-            echo "all:"
-            printf "  - '%s'\n" "${scope}"
-            echo "non_docs:"
-            printf "  - '%s'\n" "${scope}"
+          changed=false
 
-            if [[ "${scope}" == "**" ]]; then
-              echo "  - '!**/*.md'"
-              echo "  - '!**/*.mdx'"
-              echo "  - '!**/docs/**'"
-            else
-              printf "  - '!%s/**/*.md'\n" "${directory}"
-              printf "  - '!%s/**/*.mdx'\n" "${directory}"
-              printf "  - '!%s/**/docs/**'\n" "${directory}"
+          for path in "${changed_files[@]}"; do
+            if [[ -n "${directory}" && "${directory}" != "." ]]; then
+              if [[ "${path}" != "${directory}" && "${path}" != "${directory}/"* ]]; then
+                continue
+              fi
             fi
 
-            echo "EOF"
-          } >>"${GITHUB_OUTPUT}"
+            if [[ "${IGNORE_DOCS}" == "true" ]]; then
+              case "${path}" in
+                *.md | \
+                *.mdx | \
+                *.txt | \
+                LICENSE | \
+                */LICENSE | \
+                docs/* | \
+                */docs/*)
+                  continue
+                  ;;
+              esac
+            fi
 
-      - name: detect directory changes
-        id: filter
-        uses: dorny/paths-filter@v4
-        with:
-          filters: ${{ steps.patterns.outputs.filters }}
+            changed=true
+            break
+          done
 
-      - name: select result
-        id: select
-        shell: bash
-        env:
-          ALL_CHANGED: ${{ steps.filter.outputs.all }}
-          NON_DOCS_CHANGED: ${{ steps.filter.outputs.non_docs }}
-          IGNORE_DOCS: ${{ inputs.ignore_docs }}
-        run: |
-          set -euo pipefail
-
-          if [[ "${IGNORE_DOCS}" == "true" ]]; then
-            echo "changed=${NON_DOCS_CHANGED}" >>"${GITHUB_OUTPUT}"
-          else
-            echo "changed=${ALL_CHANGED}" >>"${GITHUB_OUTPUT}"
-          fi
+          echo "changed=${changed}" >>"${GITHUB_OUTPUT}"
