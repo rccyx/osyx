@@ -61,7 +61,7 @@ Bare Debian as in, starts off without even having `sudo`, plain blank TTY. I bro
 I wanted something that behaves like a hardened HUD, but keeps a premium aesthetic.
 
 > [!IMPORTANT]
-> This is not a pile of dots, neither a "distro". Here's [why](#isos-dots-issue--custom-tooling)
+> This is not a pile of dots, nor a distro. Here's [how it works](#isos-dots-issue--custom-tooling)
 
 ### Layers
 

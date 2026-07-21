@@ -1,7 +1,6 @@
 name: submodule-integrity
 
 on:
-  workflow_dispatch:
   workflow_call:
     secrets:
       GH_PAT:
