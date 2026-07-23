@@ -263,24 +263,75 @@ _osyx_apply_wallpaper() {
   fi
 }
 
+_osyx_prepare_thyx() {
+  local owner group
+
+  [[ -d "$_OSYX_THYX_DIR" ]] || return 0
+
+  if [[ ! -f "$_OSYX_THYX_THEME_CONF" ]]; then
+    print -ru2 -- "Thyx theme config not found: $_OSYX_THYX_THEME_CONF"
+    return 1
+  fi
+
+  [[ -w "$_OSYX_THYX_THEME_CONF" ]] && return 0
+
+  if ! command -v sudo >/dev/null 2>&1; then
+    print -ru2 -- "sudo not found. Cannot configure Thyx theme permissions."
+    return 1
+  fi
+
+  owner="$(id -un)" || return 1
+  group="$(id -gn)" || return 1
+
+  print -r -- "Thyx requires one-time permission setup."
+  print -r -- "Enter your sudo password to enable automatic theme switching."
+
+  command sudo chown -- "$owner:$group" "$_OSYX_THYX_THEME_CONF" || {
+    print -ru2 -- "failed to change ownership of $_OSYX_THYX_THEME_CONF"
+    return 1
+  }
+
+  command sudo chmod -- 0644 "$_OSYX_THYX_THEME_CONF" || {
+    print -ru2 -- "failed to set permissions on $_OSYX_THYX_THEME_CONF"
+    return 1
+  }
+
+  if [[ ! -w "$_OSYX_THYX_THEME_CONF" ]]; then
+    print -ru2 -- "Thyx theme config is still not writable."
+    return 1
+  fi
+}
+
 _osyx_apply_thyx() {
   local theme="$1"
+  local preset
 
   [[ -d "$_OSYX_THYX_DIR" ]] || return 0
 
   if [[ -f "$_OSYX_THYX_PRESETS_DIR/$theme.conf" ]]; then
-    cp -- "$_OSYX_THYX_PRESETS_DIR/$theme.conf" "$_OSYX_THYX_THEME_CONF"
+    preset="$_OSYX_THYX_PRESETS_DIR/$theme.conf"
   else
-    cp -- "$_OSYX_THYX_PRESETS_DIR/$_OSYX_THYX_FALLBACK.conf" "$_OSYX_THYX_THEME_CONF"
+    preset="$_OSYX_THYX_PRESETS_DIR/$_OSYX_THYX_FALLBACK.conf"
   fi
+
+  if [[ ! -f "$preset" ]]; then
+    print -ru2 -- "Thyx preset not found: $preset"
+    return 1
+  fi
+
+  command cp -- "$preset" "$_OSYX_THYX_THEME_CONF" || {
+    print -ru2 -- "failed to apply Thyx preset: $preset"
+    return 1
+  }
 }
 
 _osyx_apply_theme() {
   local theme="$1"
 
+  _osyx_prepare_thyx || return 1
   _osyx_generate_theme_files "$theme"
   _osyx_write_theme_state "$theme"
-  _osyx_apply_thyx "$theme"
+  _osyx_apply_thyx "$theme" || return 1
 
   _osyx_reload_kitty &!
   _osyx_reload_hyprland &!
@@ -296,7 +347,7 @@ themes() {
   local choice
 
   choice="$(_osyx_choose_theme "${1:-}")" || return 1
-  _osyx_apply_theme "$choice"
+  _osyx_apply_theme "$choice" || return 1
   clear
 }
 
