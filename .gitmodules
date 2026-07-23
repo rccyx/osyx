@@ -10,6 +10,10 @@
     path = packages/lookas
   	url = https://github.com/rccyx/lookas.git
 
+[submodule "ctrlyx"]
+    path = packages/ctrlyx
+  	url = https://github.com/rccyx/ctrlyx.git
+
 [submodule "asryx"]
     path = packages/asryx
   	url = https://github.com/rccyx/asryx.git
