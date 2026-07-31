@@ -1,47 +1,65 @@
-layer=overlay
+layer=top
 anchor=top-right
 margin=30,30,0,0
 padding=16
-border-radius=14
-width=407
+
+border-radius=15
+border-size=2
+
+width=355
 height=150
+
 font=Inter Medium 11
+
 background-color=#{{ mako_bg }}cc
 text-color=#{{ mako_text }}
-border-color=#{{ mako_border }}
-border-size=3
-progress-color=#{{ mako_progress }}
+border-color=#{{ tmux_pane_active_border }}aa
+progress-color=#{{ tmux_pane_active_border }}aa
 
 icons=1
 max-icon-size=56
 icon-border-radius=8
+
 sort=-time
 max-history=60
 max-visible=5
+
 markup=1
 text-alignment=left
+
 format=<span foreground="#{{ mako_text }}" weight="bold">%s</span>\n<span foreground="#{{ mako_text }}">%b</span>
 
-default-timeout=6500
-ignore-timeout=0
+default-timeout=5000
+ignore-timeout=1
 
 [urgency=low]
 background-color=#{{ kitty_selection_bg }}cc
 text-color=#{{ mako_text }}
-border-color=#{{ mako_border }}
-progress-color=#{{ mako_progress }}
-default-timeout=3500
+border-color=#{{ tmux_pane_active_border }}aa
+progress-color=#{{ tmux_pane_active_border }}aa
+default-timeout=4000
+ignore-timeout=1
 
 [urgency=normal]
 background-color=#{{ mako_bg }}cc
 text-color=#{{ mako_text }}
-border-color=#{{ mako_border }}
-progress-color=#{{ mako_progress }}
+border-color=#{{ tmux_pane_active_border }}aa
+progress-color=#{{ tmux_pane_active_border }}aa
+default-timeout=5000
+ignore-timeout=1
 
 [urgency=critical]
 background-color=#{{ mako_bg }}cc
 text-color=#{{ mako_text }}
-border-color=#{{ starship_error }}
-progress-color=#{{ starship_error }}
-default-timeout=0
+border-color=#{{ starship_error }}aa
+progress-color=#{{ starship_error }}aa
+default-timeout=5000
 ignore-timeout=1
+
+[mode=control-center]
+invisible=1
+
+[app-name=asryx]
+default-timeout=5000
+ignore-timeout=1
+history=0

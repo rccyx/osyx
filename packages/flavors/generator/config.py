@@ -13,9 +13,11 @@ OUTPUTS = {
     "mako.conf.j2": ".config/mako/config",
     "starship.toml.j2": ".config/starship.toml",
     "dircolors.j2": ".dircolors",
-    "hypr.conf.j2": ".config/hypr/theme.conf",
+    "hypr.lua.j2": ".config/hypr/theme.lua",
     "tmux.conf.j2": ".tmux.conf",
     "powyx.toml.j2": ".config/powyx/powyx.toml",
+    "ctrlyx.yaml.j2": ".config/ctrlyx.yaml",
+    "lookas.toml.j2": ".config/lookas.toml",
     "wofi.css.j2": ".config/wofi/style.css",
     "gitconfig.j2": ".gitconfig.d/theme",
 }
