@@ -1,59 +1,20 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
-if [ -s "$NVM_DIR/nvm.sh" ]; then
-  . "$NVM_DIR/nvm.sh"
-  nvm use default >/dev/null 2>&1 || true
+command -v npm >/dev/null 2>&1 && npm uninstall -g pnpm >/dev/null 2>&1 || true
+command -v corepack >/dev/null 2>&1 && corepack disable pnpm >/dev/null 2>&1 || true
+rm -rf "$HOME/.cache/node/corepack"
+
+old_pnpm=$(command -v pnpm 2>/dev/null || true)
+if [[ -n "$old_pnpm" && "$old_pnpm" != "$HOME/.local/share/pnpm"* ]]; then
+  rm -f "$old_pnpm"
 fi
 
-command -v node >/dev/null 2>&1 || { echo "[err] node not found (run --with=node first)"; exit 1; }
+export PNPM_HOME="$HOME/.local/share/pnpm"
+mkdir -p "$PNPM_HOME"
 
-# Annihilate state, including the broken corepack cache and rogue aliases
-rm -rf "$HOME/.local/share/pnpm"
-rm -rf "$HOME/.cache/node/corepack"
-corepack disable pnpm >/dev/null 2>&1 || true
-npm uninstall -g pnpm >/dev/null 2>&1 || true
-rm -f "$(command -v pnpm 2>/dev/null)" || true
+curl -fsSL https://get.pnpm.io/install.sh | sh -
 
-# Install natively to bypass corepack's ESM bug entirely
-npm install -g pnpm
-
-PNPM_HOME="${PNPM_HOME:-$HOME/.local/share/pnpm}"
-
-mark_start='# >>> osyx:pnpm >>>'
-mark_end='# <<< osyx:pnpm <<<'
-
-persist_block() {
-  local f="$1"
-  mkdir -p "$(dirname "$f")"
-  touch "$f"
-
-  if grep -qF "$mark_start" "$f"; then
-    return 0
-  fi
-
-  {
-    echo ""
-    echo "$mark_start"
-    echo "export PNPM_HOME=\"\$HOME/.local/share/pnpm\""
-    echo "case \":\$PATH:\" in"
-    echo "  *\":\$PNPM_HOME/bin:\"*) ;;"
-    echo "  *) export PATH=\"\$PNPM_HOME/bin:\$PNPM_HOME:\$PATH\" ;;"
-    echo "esac"
-    echo "$mark_end"
-  } >>"$f"
-}
-
-export PNPM_HOME
-case ":$PATH:" in
-  *":$PNPM_HOME/bin:"*) ;;
-  *) export PATH="$PNPM_HOME/bin:$PNPM_HOME:$PATH" ;;
-esac
-
-persist_block "$HOME/.profile"
-persist_block "$HOME/.zshrc"
-
-command -v pnpm >/dev/null 2>&1 || { echo "[err] pnpm still not on PATH"; exit 1; }
+export PATH="$PNPM_HOME:$PATH"
 
 pnpm config set store-dir "$PNPM_HOME/store"
