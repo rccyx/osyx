@@ -1,8 +1,25 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
+export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+if [ -s "$NVM_DIR/nvm.sh" ]; then
+  . "$NVM_DIR/nvm.sh"
+  nvm use default >/dev/null 2>&1 || true
+fi
+
+command -v node >/dev/null 2>&1 || { echo "[err] node not found (run --with=node first)"; exit 1; }
+
+# Annihilate state, including the broken corepack cache and rogue aliases
+rm -rf "$HOME/.local/share/pnpm"
+rm -rf "$HOME/.cache/node/corepack"
+corepack disable pnpm >/dev/null 2>&1 || true
+npm uninstall -g pnpm >/dev/null 2>&1 || true
+rm -f "$(command -v pnpm 2>/dev/null)" || true
+
+# Install natively to bypass corepack's ESM bug entirely
+npm install -g pnpm
+
 PNPM_HOME="${PNPM_HOME:-$HOME/.local/share/pnpm}"
-PNPM_VERSION="${PNPM_VERSION:-9.15.0}" # Should be updated periodically to stable baseline
 
 mark_start='# >>> osyx:pnpm >>>'
 mark_end='# <<< osyx:pnpm <<<'
@@ -28,20 +45,6 @@ persist_block() {
   } >>"$f"
 }
 
-# load nvm if present (needed because each installer runs in its own bash process)
-export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
-if [ -s "$NVM_DIR/nvm.sh" ]; then
-  # shellcheck disable=SC1090
-  . "$NVM_DIR/nvm.sh"
-  nvm use default >/dev/null 2>&1 || true
-fi
-
-command -v node >/dev/null 2>&1 || { echo "[err] node not found (run --with=node first)"; exit 1; }
-command -v corepack >/dev/null 2>&1 || { echo "[err] corepack not found"; exit 1; }
-
-corepack enable >/dev/null 2>&1 || true
-corepack prepare "pnpm@${PNPM_VERSION}" --activate
-
 export PNPM_HOME
 case ":$PATH:" in
   *":$PNPM_HOME/bin:"*) ;;
@@ -53,4 +56,4 @@ persist_block "$HOME/.zshrc"
 
 command -v pnpm >/dev/null 2>&1 || { echo "[err] pnpm still not on PATH"; exit 1; }
 
-pnpm add -g typescript ts-node eslint prettier
+pnpm config set store-dir "$PNPM_HOME/store"
