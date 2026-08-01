@@ -1,8 +1,8 @@
 [actions]
 lock = "hyprlock"
 suspend = "systemctl suspend"
-reboot = "systemctl reboot"
-shutdown = "systemctl poweroff"
+reboot = "hyprshutdown -t --post-cmd systemctl reboot"
+shutdown = "hyprshutdown -t --post-cmd systemctl poweroff"
 
 [theme]
 confirm = "#{{ tmux_pane_active_border }}"

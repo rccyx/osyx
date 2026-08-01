@@ -3,7 +3,7 @@
 -- Pure Lua module. Import with __require("variables").
 -- =============================================================================
 
-local home = os.getenv("HOME") or "/home/ashgw"
+local home = os.getenv("HOME")
 local config_home = os.getenv("XDG_CONFIG_HOME") or (home .. "/.config")
 
 return {

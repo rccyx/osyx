@@ -1,9 +1,19 @@
 # Hyprland
 
-Repo: `config/.config/hypr/hyprland.conf`
+Repository entry point:
 
-Machine: `~/.config/hypr/hyprland.conf`
+```text
+config/.config/hypr/hyprland.lua
+```
 
-Each one of these files has self explaining docs.
 
-`hyprland.conf` is only the entry point. It owns load order.
+Installed entry point:
+
+```text
+~/.config/hypr/hyprland.lua
+```
+
+`hyprland.lua` contains no compositor configuration of its own. It is only the entry point and owns the module load order.
+
+The configuration is split into focused Lua modules. Each file documents its own purpose, settings, dependencies, and machine-specific assumptions.
+
