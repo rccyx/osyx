@@ -21,6 +21,7 @@ hl.on("hyprland.start", function()
   start_on(9, 'brave-browser --profile-directory="Default" --app="https://youtube.com"')
 
   hl.exec_cmd("hyprpaper")
+  hl.exec_cmd("hyprsunset")
   hl.exec_cmd("mako")
   hl.exec_cmd("swww-daemon")
   hl.exec_cmd("waypaper --backend swww --restore")
