@@ -13,6 +13,13 @@ local function webapp(url)
   return variables.webapp .. url
 end
 
+local function hardware_bind(key, command, repeating)
+  exec(key, command, {
+    locked = true,
+    repeating = repeating,
+  })
+end
+
 -- Theme rotation
 exec("ALT + R", [[zsh -ic 'themes rotate']])
 
@@ -47,7 +54,10 @@ exec("ALT + Q", variables.term)
 -- Window state
 hl.bind(mod .. " + Q", hl.dsp.window.close())
 hl.bind("ALT + F4", hl.dsp.window.close())
-hl.bind(mod .. " + F", hl.dsp.window.fullscreen({ mode = "maximized", action = "toggle" }))
+hl.bind(mod .. " + F", hl.dsp.window.fullscreen({
+  mode = "maximized",
+  action = "toggle",
+}))
 hl.bind(mod .. " + V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mod .. " + P", hl.dsp.window.pseudo({ action = "toggle" }))
 hl.bind(mod .. " + S", hl.dsp.layout("togglesplit"))
@@ -61,20 +71,30 @@ local directions = {
 }
 
 for key, direction in pairs(directions) do
-  hl.bind(mod .. " + " .. key, hl.dsp.focus({ direction = direction }))
-  hl.bind(mod .. " + SHIFT + " .. key, hl.dsp.window.move({ direction = direction }))
+  hl.bind(mod .. " + " .. key, hl.dsp.focus({
+    direction = direction,
+  }))
+
+  hl.bind(mod .. " + SHIFT + " .. key, hl.dsp.window.move({
+    direction = direction,
+  }))
 end
 
 -- Relative workspace navigation and window cycling
 hl.bind("CTRL + ALT + left", hl.dsp.focus({ workspace = "r-1" }))
 hl.bind("CTRL + ALT + right", hl.dsp.focus({ workspace = "r+1" }))
 hl.bind("ALT + TAB", hl.dsp.window.cycle_next())
-hl.bind("ALT + SHIFT + TAB", hl.dsp.window.cycle_next({ next = false }))
+hl.bind("ALT + SHIFT + TAB", hl.dsp.window.cycle_next({
+  next = false,
+}))
 
 -- Workspace selection: number row
 for workspace = 1, 10 do
   local key = workspace % 10
-  hl.bind(mod .. " + " .. key, hl.dsp.focus({ workspace = workspace }))
+
+  hl.bind(mod .. " + " .. key, hl.dsp.focus({
+    workspace = workspace,
+  }))
 end
 
 -- Workspace selection: French AZERTY symbols
@@ -92,23 +112,41 @@ local azerty = {
 }
 
 for workspace, key in ipairs(azerty) do
-  hl.bind(mod .. " + " .. key, hl.dsp.focus({ workspace = workspace }))
+  hl.bind(mod .. " + " .. key, hl.dsp.focus({
+    workspace = workspace,
+  }))
 end
 
 -- Move windows by physical top-row keycode, independent of keyboard layout
 for workspace = 1, 10 do
   local keycode = workspace + 9
-  hl.bind(mod .. " + SHIFT + code:" .. keycode, hl.dsp.window.move({ workspace = workspace }))
+
+  hl.bind(
+    mod .. " + SHIFT + code:" .. keycode,
+    hl.dsp.window.move({ workspace = workspace })
+  )
 end
 
--- Audio and brightness. Locked binds still work while the lock screen is active.
-exec("XF86AudioRaiseVolume", "pamixer -i 5", { locked = true, repeating = true })
-exec("XF86AudioLowerVolume", "pamixer -d 5", { locked = true, repeating = true })
-exec("XF86AudioMute", "pamixer -t", { locked = true })
-exec("XF86AudioMicMute", "pamixer --default-source -t", { locked = true })
-exec("XF86MonBrightnessUp", "brightnessctl set +5%", { locked = true, repeating = true })
-exec("XF86MonBrightnessDown", "brightnessctl set 5%-", { locked = true, repeating = true })
+-- Laptop function row
+hardware_bind("F1", "pamixer -t", false)
+hardware_bind("F2", "pamixer -d 5", true)
+hardware_bind("F3", "pamixer -i 5", true)
+hardware_bind("F6", "brightnessctl set 5%-", true)
+hardware_bind("F7", "brightnessctl set +5%", true)
+
+-- Media-key aliases for Fn-lock and keyboards that emit XF86 keysyms
+hardware_bind("XF86AudioMute", "pamixer -t", false)
+hardware_bind("XF86AudioLowerVolume", "pamixer -d 5", true)
+hardware_bind("XF86AudioRaiseVolume", "pamixer -i 5", true)
+hardware_bind("XF86AudioMicMute", "pamixer --default-source -t", false)
+hardware_bind("XF86MonBrightnessDown", "brightnessctl set 5%-", true)
+hardware_bind("XF86MonBrightnessUp", "brightnessctl set +5%", true)
 
 -- Mouse window manipulation
-hl.bind(mod .. " + mouse:272", hl.dsp.window.drag(), { mouse = true })
-hl.bind(mod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
+hl.bind(mod .. " + mouse:272", hl.dsp.window.drag(), {
+  mouse = true,
+})
+
+hl.bind(mod .. " + mouse:273", hl.dsp.window.resize(), {
+  mouse = true,
+})
