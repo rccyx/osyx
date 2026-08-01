@@ -1,7 +1,3 @@
--- =============================================================================
--- _keybinds.lua — personal shortcuts
--- =============================================================================
-
 local variables = __require("_variables")
 local mod = variables.mod
 
@@ -34,7 +30,7 @@ exec("ALT + G", "google-chrome")
 exec("ALT + L", "hyprlock")
 exec("ALT + M", "ctrlyx")
 exec("ALT + P", "powyx")
-exec("ALT + V", "vocaster")
+exec("ALT + V", variables.home .. "/.local/bin/vocaster")
 exec("ALT + W", variables.home .. "/.local/bin/asryx")
 
 -- Web apps
@@ -99,7 +95,7 @@ for workspace, key in ipairs(azerty) do
   hl.bind(mod .. " + " .. key, hl.dsp.focus({ workspace = workspace }))
 end
 
--- Move windows by physical top-row keycode; independent of keyboard layout
+-- Move windows by physical top-row keycode, independent of keyboard layout
 for workspace = 1, 10 do
   local keycode = workspace + 9
   hl.bind(mod .. " + SHIFT + code:" .. keycode, hl.dsp.window.move({ workspace = workspace }))
