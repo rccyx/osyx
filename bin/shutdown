@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 
-hyprshutdown -t 'Shutting down...' --post-cmd 'systemctl poweroff'
+# hyprshutdown -t 'Shutting down...' --post-cmd 'systemctl poweroff'
+systemctl poweroff
