@@ -7,6 +7,7 @@ import "effects"
 Window {
     id: root
 
+    title: "powyx"
     visibility: Window.FullScreen
     flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
     color: "transparent"
