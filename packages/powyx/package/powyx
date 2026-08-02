@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -10,12 +11,26 @@ source "$SCRIPT_DIR/lib/_repo.sh"
 
 (($# == 0)) || _powyx_error "arguments are not supported"
 
+# only ONE Powyx interface may exist at a time.
+#
+# the first process owns file descriptor 9 for the lifetime of its QML window & every later invocation
+# fails the non-blocking lock and exits successfully
+# without creating another Qt window.
+_powyx_acquire_instance_lock || exit 0
+
 _powyx_find_installed_share_dir
 _powyx_find_qml_runner
 _powyx_read_action_config
 _powyx_read_theme_config
 _powyx_validate_action_config
 _powyx_validate_theme_config
+
 POWYX_EXIT_CODE=0
+
 _powyx_launch_qml || POWYX_EXIT_CODE=$?
+
+# the visual interface is gone now => release before running the selected action
+# so commands such as hyprlock (through the lock config) do not retain the Powyx instance lock.
+_powyx_release_instance_lock
+
 _powyx_dispatch_qml_exit_code "$POWYX_EXIT_CODE"
