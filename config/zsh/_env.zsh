@@ -30,7 +30,6 @@ path+=(
   $HOME/miniconda3/bin
   $HOME/.tfenv/bin
   $HOME/.cargo/bin
-  $HOME/.local/share/pnpm
   $HOME/go/bin
   $HOME/.bun/bin
   $HOME/mathlab/MATLAB/R2024b/bin
@@ -89,12 +88,6 @@ if [[ -z "$_ZSH_ENV_LOADED" ]]; then
   # bun
   export BUN_INSTALL="$HOME/.bun"
 
-  # pnpm
-	export PNPM_HOME="$HOME/.local/share/pnpm"
-	case ":$PATH:" in
-	  *":$PNPM_HOME/bin:"*) ;;
-	  *) export PATH="$PNPM_HOME/bin:$PNPM_HOME:$PATH" ;;
-	esac
   # go
   export GOPATH="$HOME/go"
 

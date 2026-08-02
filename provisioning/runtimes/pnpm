@@ -1,20 +1,226 @@
 #!/usr/bin/env bash
+
 set -Eeuo pipefail
 
-command -v npm >/dev/null 2>&1 && npm uninstall -g pnpm >/dev/null 2>&1 || true
-command -v corepack >/dev/null 2>&1 && corepack disable pnpm >/dev/null 2>&1 || true
-rm -rf "$HOME/.cache/node/corepack"
+readonly pnpm_home="${HOME}/.local/share/pnpm"
+readonly zshrc="${HOME}/.zshrc"
 
-old_pnpm=$(command -v pnpm 2>/dev/null || true)
-if [[ -n "$old_pnpm" && "$old_pnpm" != "$HOME/.local/share/pnpm"* ]]; then
-  rm -f "$old_pnpm"
-fi
+readonly block_begin="# >>> osyx:pnpm >>>"
+readonly block_end="# <<< osyx:pnpm <<<"
 
+fail()
+{
+  printf 'pnpm: %s\n' "$*" >&2
+  exit 1
+}
+
+require()
+{
+  command -v "$1" >/dev/null 2>&1 ||
+    fail "$1 is required"
+}
+
+remove_zsh_block()
+{
+  [[ -f "$zshrc" ]] || return 0
+
+  local begin_count
+  local end_count
+  local temporary
+
+  begin_count="$(grep -Fxc -- "$block_begin" "$zshrc" || true)"
+  end_count="$(grep -Fxc -- "$block_end" "$zshrc" || true)"
+
+  if [[ "$begin_count" == 0 && "$end_count" == 0 ]]; then
+    return 0
+  fi
+
+  if [[ "$begin_count" != 1 || "$end_count" != 1 ]]; then
+    fail "malformed pnpm section in $zshrc"
+  fi
+
+  temporary="$(mktemp)"
+
+  awk \
+    -v begin="$block_begin" \
+    -v end="$block_end" '
+      $0 == begin {
+        skipping = 1
+        next
+      }
+
+      $0 == end {
+        skipping = 0
+        next
+      }
+
+      !skipping {
+        if ($0 ~ /^[[:space:]]*$/) {
+          pending = pending $0 ORS
+          next
+        }
+
+        printf "%s", pending
+        pending = ""
+        print
+      }
+    ' "$zshrc" > "$temporary"
+
+  cat "$temporary" > "$zshrc"
+  rm -f -- "$temporary"
+}
+
+write_zsh_block()
+{
+  mkdir -p -- "$(dirname "$zshrc")"
+  touch "$zshrc"
+
+  remove_zsh_block
+
+  if [[ -s "$zshrc" ]]; then
+    printf '\n\n' >> "$zshrc"
+  fi
+
+  cat >> "$zshrc" <<'EOF'
+# >>> osyx:pnpm >>>
 export PNPM_HOME="$HOME/.local/share/pnpm"
-mkdir -p "$PNPM_HOME"
 
-curl -fsSL https://get.pnpm.io/install.sh | sh -
+typeset -U PATH path
 
-export PATH="$PNPM_HOME:$PATH"
+path=(
+  "$PNPM_HOME/bin"
+  "$PNPM_HOME"
+  $path
+)
 
-pnpm config set store-dir "$PNPM_HOME/store"
+export PATH
+# <<< osyx:pnpm <<<
+EOF
+}
+
+run_pnpm_installer()
+{
+  local backup
+  local had_zshrc=0
+  local status
+
+  backup="$(mktemp)"
+
+  if [[ -f "$zshrc" ]]; then
+    cp -p -- "$zshrc" "$backup"
+    had_zshrc=1
+  fi
+
+  set +e
+
+  curl -fsSL https://get.pnpm.io/install.sh |
+    env \
+      PNPM_HOME="$pnpm_home" \
+      SHELL="$(command -v zsh)" \
+      sh -
+
+  status=$?
+
+  set -e
+
+  # The upstream installer may edit .zshrc. Restore it because this
+  # runtime owns its own explicitly marked section.
+  if [[ "$had_zshrc" == 1 ]]; then
+    cp -p -- "$backup" "$zshrc"
+  else
+    rm -f -- "$zshrc"
+  fi
+
+  rm -f -- "$backup"
+
+  return "$status"
+}
+
+find_pnpm()
+{
+  local candidate
+
+  for candidate in \
+    "$pnpm_home/bin/pnpm" \
+    "$pnpm_home/pnpm"
+  do
+    if [[ -x "$candidate" ]]; then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+remove_conflicting_installations()
+{
+  if command -v npm >/dev/null 2>&1; then
+    npm uninstall --global pnpm >/dev/null 2>&1 || true
+  fi
+
+  if command -v corepack >/dev/null 2>&1; then
+    corepack disable pnpm >/dev/null 2>&1 || true
+  fi
+}
+
+install_pnpm()
+{
+  require curl
+  require zsh
+  require awk
+  require grep
+  require mktemp
+
+  remove_conflicting_installations
+
+  mkdir -p -- "$pnpm_home"
+
+  run_pnpm_installer ||
+    fail "standalone installer failed"
+
+  local pnpm_binary
+
+  pnpm_binary="$(find_pnpm)" ||
+    fail "installer completed without creating a pnpm executable"
+
+  PNPM_HOME="$pnpm_home" \
+  PATH="$pnpm_home/bin:$pnpm_home:$PATH" \
+    "$pnpm_binary" config set store-dir "$pnpm_home/store"
+
+  write_zsh_block
+
+  printf 'pnpm: installed %s\n' "$("$pnpm_binary" --version)"
+  printf 'pnpm: restart the current shell with: exec zsh\n'
+}
+
+uninstall_pnpm()
+{
+  remove_zsh_block
+  remove_conflicting_installations
+
+  rm -rf -- "$pnpm_home"
+
+  printf 'pnpm: uninstalled\n'
+  printf 'pnpm: restart the current shell with: exec zsh\n'
+}
+
+usage()
+{
+  printf 'Usage: %s install|uninstall\n' "${0##*/}" >&2
+  exit 1
+}
+
+case "${1:-}" in
+  install)
+    install_pnpm
+    ;;
+
+  uninstall)
+    uninstall_pnpm
+    ;;
+
+  *)
+    usage
+    ;;
+esac
