@@ -1,8 +1,14 @@
 local M = {}
 
+local uv = vim.uv or vim.loop
+
 local registry_file = vim.fn.expand("~/flavors/theme-names.toml")
+local registry_dir = vim.fn.fnamemodify(registry_file, ":h")
+local registry_name = vim.fn.fnamemodify(registry_file, ":t")
 local fallback = "vague"
-local last_mtime = 0
+
+local watcher = nil
+local reload_timer = nil
 
 local function _trim(value)
   return (value:gsub("^%s+", ""):gsub("%s+$", ""))
@@ -244,22 +250,73 @@ function M.reload()
   M.apply()
 end
 
-function M.check()
-  local uv = vim.uv or vim.loop
-  local stat = uv.fs_stat(registry_file)
-
-  if not stat then
+local function _close_handle(handle)
+  if not handle then
     return
   end
 
-  local mtime = stat.mtime.sec
+  pcall(function()
+    handle:stop()
+  end)
 
-  if last_mtime > 0 and mtime ~= last_mtime then
-    M.reload()
-    vim.notify("theme flipped", vim.log.levels.INFO)
+  if not handle:is_closing() then
+    handle:close()
+  end
+end
+
+local function _stop_watcher()
+  _close_handle(watcher)
+  _close_handle(reload_timer)
+
+  watcher = nil
+  reload_timer = nil
+end
+
+local function _queue_reload()
+  if not reload_timer then
+    return
   end
 
-  last_mtime = mtime
+  reload_timer:stop()
+  reload_timer:start(50, 0, vim.schedule_wrap(function()
+    M.reload()
+  end))
+end
+
+local function _watch_registry()
+  _stop_watcher()
+
+  watcher = uv.new_fs_event()
+  reload_timer = uv.new_timer()
+
+  if not watcher or not reload_timer then
+    _stop_watcher()
+    vim.notify("failed to create OSyx theme watcher", vim.log.levels.ERROR)
+    return
+  end
+
+  watcher:unref()
+  reload_timer:unref()
+
+  local ok, error_message = watcher:start(registry_dir, {}, function(error, filename)
+    if error then
+      vim.schedule(function()
+        vim.notify("OSyx theme watcher failed: " .. error, vim.log.levels.ERROR)
+      end)
+      return
+    end
+
+    local changed_name = filename and filename:match("([^/]+)$") or nil
+
+    if changed_name == nil or changed_name == registry_name then
+      _queue_reload()
+    end
+  end)
+
+  if not ok then
+    _stop_watcher()
+    vim.notify("failed to watch OSyx theme registry: " .. tostring(error_message), vim.log.levels.ERROR)
+  end
 end
 
 local cycle_themes = {
@@ -301,16 +358,8 @@ end
 
 function M.setup()
   M.apply()
-  M.check()
 
-  vim.api.nvim_create_augroup("OsyxThemeFlip", { clear = true })
-
-  vim.api.nvim_create_autocmd("FocusGained", {
-    group = "OsyxThemeFlip",
-    callback = function()
-      M.check()
-    end,
-  })
+  local group = vim.api.nvim_create_augroup("OsyxThemeFlip", { clear = true })
 
   vim.api.nvim_create_user_command("OsyxFlip", function()
     M.reload()
@@ -319,6 +368,13 @@ function M.setup()
   vim.api.nvim_create_user_command("OsyxReloadTheme", function()
     M.reload()
   end, { desc = "Reload OSyx app theme registry" })
+
+  vim.api.nvim_create_autocmd("VimLeavePre", {
+    group = group,
+    callback = _stop_watcher,
+  })
+
+  _watch_registry()
 end
 
 return M
