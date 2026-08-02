@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+HYPRTRYX_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+HYPRTRYX_LIB="$HYPRTRYX_ROOT/lib"
+
+# shellcheck source=lib/config.sh
+. "$HYPRTRYX_LIB/config.sh"
+# shellcheck source=lib/ui.sh
+. "$HYPRTRYX_LIB/ui.sh"
+# shellcheck source=lib/platform.sh
+. "$HYPRTRYX_LIB/platform.sh"
+# shellcheck source=lib/state.sh
+. "$HYPRTRYX_LIB/state.sh"
+# shellcheck source=lib/git.sh
+. "$HYPRTRYX_LIB/git.sh"
+# shellcheck source=lib/compiler.sh
+. "$HYPRTRYX_LIB/compiler.sh"
+# shellcheck source=lib/cleanup.sh
+. "$HYPRTRYX_LIB/cleanup.sh"
+# shellcheck source=lib/patches.sh
+. "$HYPRTRYX_LIB/patches.sh"
+# shellcheck source=lib/build.sh
+. "$HYPRTRYX_LIB/build.sh"
+# shellcheck source=lib/deps.sh
+. "$HYPRTRYX_LIB/deps.sh"
+# shellcheck source=lib/commands.sh
+. "$HYPRTRYX_LIB/commands.sh"
+
+CMD="${1:-}"
+shift || true
+
+PREFIX="$PREFIX_DEFAULT"
+STATE_DIR="$STATE_DIR_DEFAULT"
+CACHE_DIR="$CACHE_DIR_DEFAULT"
+SRC_DIR="$SRC_DIR_DEFAULT"
+BUILD_DIR="$BUILD_DIR_DEFAULT"
+STAGE_DIR="$STAGE_DIR_DEFAULT"
+LOG_DIR="$LOG_DIR_DEFAULT"
+STATE_FILE="$STATE_FILE_DEFAULT"
+MANIFEST_DIR="$MANIFEST_DIR_DEFAULT"
+
+YES=0
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --yes)
+      case "$CMD" in
+        apply|reset) YES=1 ;;
+        *) die "--yes is only valid with apply or reset" ;;
+      esac
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      die "unknown argument: $1"
+      ;;
+  esac
+  shift
+done
+
+mk_dirs
+
+exec 9>"$STATE_DIR/run.lock"
+flock -n 9 || die "another hyprtryx process is running"
+
+RUN_LOG="$LOG_DIR/$(now_stamp)-${CMD:-help}.log"
+exec > >(tee -a "$RUN_LOG") 2>&1
+
+case "$CMD" in
+  plan)
+    plan_actions
+    ;;
+  apply)
+    apply
+    ;;
+  doctor)
+    doctor
+    ;;
+  remove)
+    remove
+    ;;
+  reset)
+    reset
+    ;;
+  ""|help|-h|--help)
+    usage
+    ;;
+  *)
+    die "unknown command: $CMD"
+    ;;
+esac
+
