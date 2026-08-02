@@ -4,7 +4,6 @@
 # ─────────────────────────────────────────────
 alias c="clear"
 alias ez="eza --long --header --inode --git"
-alias sdn="shutdown -h now"
 alias t="touch"
 alias tt="tmux"
 alias p="python3 -m"
