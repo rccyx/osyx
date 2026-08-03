@@ -5,18 +5,22 @@
 -- this is soo important to get that smooth drop with QML, otherwise the normal hypr animations interfere with it 
 -- and slides it vertically like any other window
 hl.window_rule({
-  name = "powyx-no-window-animation",
+  name = "powyx-overlay",
   match = {
     initial_title = "^powyx$",
   },
+  float = true,
+  fullscreen = true,
   no_anim = true,
 })
 
 hl.window_rule({
-  name = "ctrlyx-no-window-animation",
+  name = "ctrlyx-overlay",
   match = {
     initial_title = "^ctrlyx$",
   },
+  float = true,
+  fullscreen = true,
   no_anim = true,
 })
 --
