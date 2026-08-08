@@ -3,12 +3,6 @@
 # Starship prompt, zoxide, thefuck, FZF defaults.
 # ───────────────────────────────
 
-# thefuck
-eval "$(thefuck --alias)"
-
-# zoxide (smart cd)
-eval "$(zoxide init zsh)"
-
 # Starship prompt
 eval "$(starship init zsh)"
 export STARSHIP_CONFIG="$HOME/.config/starship.toml"
