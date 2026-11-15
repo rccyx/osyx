@@ -1,10 +1,8 @@
-# Dependencies
+# Powyx
 
-Debian is the automated and tested path.
+For Debian, just run `./package/install` it will auto install everything.
 
-Non-Debian systems are manual dependency paths.
-
-Install the Qt/QML runtime yourself, then run:
+For other distros, install the Qt/QML runtime yourself, and then run the installer without deps checks:
 
 ```sh
 ./package/install --no-install-deps
@@ -39,19 +37,19 @@ sudo apt-get install -y --no-install-recommends \
   libqt6svg6
 ```
 
-# Font
+## Font
 
-The QML uses Plus Jakarta Sans.
+This uses Plus Jakarta Sans.
 
-You can also get it from:
+So have a look at [`fonts.sh`](/provisioning/setup/display/fonts.sh), or you can just get the font by installing `thyx` anyway:
 
 ```text
 https://github.com/rccyx/thyx
 ```
 
-# Config
+## Config
 
-`powyx.toml` contains action commands and the confirmation color.
+This is so simple. `~/.config/powyx/powyx.toml` contains action commands and the confirmation color.
 
 ```toml
 [actions]
@@ -64,18 +62,6 @@ shutdown = "systemctl poweroff"
 confirm = "#E7BE5B"
 ```
 
-`theme.confirm` controls the second click confirmation state.
+`theme.confirm` controls the second click confirmation state color.
 
-Use this for osyx flavor colors.
-
-Examples:
-
-```toml
-[theme]
-confirm = "#8BD5CA"
-```
-
-```toml
-[theme]
-confirm = "#F5B8C4"
-```
+If you're using the [flavors](/packages/flavors/) package already, it auto switches `powyx` themes when you switch desktop themes.

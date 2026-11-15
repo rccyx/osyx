@@ -2,7 +2,7 @@
 
 # **_osyx_**
 
-<p align="center"><i>A reproducible, keyboard driven Linux workstation, built from bare Debian upward.</i></p>
+<p align="center"><i>Bespoke OS, built from bare Debian upward.</i></p>
 
 <p align="center">
   <a href="https://github.com/rccyx/osyx/actions">
@@ -37,9 +37,12 @@
     <td><img width="100%" alt="osyx desktop" src="https://github.com/user-attachments/assets/80141186-0a5a-4cef-ad3b-c9222a1b4f20" /></td>
     <td><img width="100%" alt="osyx desktop" src="https://github.com/user-attachments/assets/4ad3033e-8651-4c8c-988e-0fafd016d932" /></td>
   </tr>
+  <tr>
+    <td><img width="100%" alt="osyx desktop" src="https://github.com/user-attachments/assets/8475976a-f782-4dbe-8fb6-5509e8deb4cc" /></td>
+    <td><img width="100%" alt="osyx desktop" src="https://github.com/user-attachments/assets/e0ad8df6-758b-4f8b-bed9-fd262a7306ce" /></td>
+  </tr>
 </table>
 
-<p align="center"><i>The UI in these shots is custom, from the login screen to the power menu to the control center.</i></p>
 
 ## Demo
 
@@ -52,96 +55,53 @@
 > [!IMPORTANT]
 > This is still in beta, there's no one command install yet, but you can already pull individual pieces (the theming setup, the login screen, the standalone tools) and run them today. See [Can I use this today?](#can-i-use-this-today)
 
-## What
+## Explainer
 
-This not dots, nor a distro. 
+This is a bespoke OS layer that attaches to a clean base OS. 
 
-OSyx is a **meta-distro**.
+Not dots (although they're included anyway), nor a distro (anyone can call anything a distro). 
 
+Starting with bare Debian Trixie for now, and extending to others in the future (Arch, etc). 
 
-It's a bespoke OS layer that attaches to a clean base OS (starting with bare Debian Trixie for now, and extending to others in the future, Arch, etc.) and converts a blank TTY into a hyper-optimized, premium looking workstation in minutes.
+Which converts a blank TTY into a hyper optimized and premium looking workstation in minutes.
 
-Everything is built/assembled from scratch (the starting base has no `sudo` even), and to make it all cohesive: the login screen, the power menu, the control center, the audio visualizer, the theming engine, even the Hyprland builder. All mine, and all built to fit each other.
+Everything is built/assembled from scratch (base slate doens't even include `sudo`), and to make it all cohesive: the login screen, the power menu, the theming, everything, even the Hyprland builder (compiles all hypr programs for Debian) work together in unison.  
 
-It gives you the pristine, premium feel of macOS built on 100% open-source software, with zero Apple bullshit.
+If a program doesn't fit, I just make a custom made one that's suited.
 
-It's been my daily driver for years at this point. It doesn't embarrass me in business meetings, excellent for dev work, it doesn't brick on Monday mornings, it just works. I haven't touched macOS/Windows in years.
+It gives a pristine, premium feel of macOS built on 100% open-source software.
 
-I recently started open-sourcing this whole setup.
+It's been my daily driver for years at this point. It doesn't embarrass me in meetings, excellent for engineering, it doesn't brick on Monday mornings, it just works. 
 
-### Why not just dots?
+And I haven't touched macOS/Windows in years.
 
-Dotfiles imply a bunch of config files that may or may not work.
+I recently started open-sourcing this whole setup, so I'm dropping projects one by one (whenever I have time).
 
-Frankenstein repos that barely work (good for screenshots though). You'll see Alacritty, Ghostty, and Kitty configs, but none of them is slightly workable or even fits the other programs.
+## Product
 
-Here, if a program doesn't fit, I just make a custom made one that's just suited for this whole setup.
+I want my computing experience to operate like a HUD, but also look beautiful.
 
-For example, CAVA is too twitchy for the frequency visualizer. So I built my own [custom visualizer](#lookas) that fits how humans hear sound.
+I removed everything that doesn't need to be there this down to bare metal so it just does the job and nothing else. The system builds itself layer by layer, so when it builds, it's lightweight, bloat-free, and completely reproducible and extendable.
 
-I also have my own Hyprland builder. Why? Because the current ecosystem doesn't have a good Hyprland builder, it's either bloated or bloated.
+Last thing I want is a bloated Electron app eating up RAM or interrupting my focus with random data. 
 
-This one is CI/CD tested and idempotent.
+I have a big issue with bloated menus, icons everywhere, flashy drop downs, too many built in apps, choice fatigue, etc.
 
-### Why not a distro?
-
-Anyone calls anything a distro these days, I do think they're a relic from the 2000s. Distro wars don't make sense in 2026.
-
-Anything works, so build on top of it, this does exactly that.
-
-## Philosophy
-
-When it comes to using Linux, there are two basically types of people.
-
-### Ricers
-
-[Ricers](https://reddit.com/r/unixporn) (Aesthetics = 999/10. Reliability = 1/10)
-
-Usually artists, students, or hobbyists, building insanely beautiful masterpieces, but endlessly replacing components, rebuilding configs every month, (actually every week), some even days. And have ABSOLUTELY no problem bricking the daily driver on a Monday morning.
-
-### Hardcore old school setup
-
-[Hardcore old school setup](https://youtu.be/bdumjiHabhQ) (Aesthetics = -1/10. Reliability = 10/10)
-
-Brutally efficient workflows, fast terminals, muxed everywhere, keyboard-driven systems, extremely high throughput for professional work, but the machine itself often looks like an ancient (and hostile) screen from the 80s that no one wants to use. And CANNOT brick the daily driver on a Monday morning.
-
-### The missing 10%
-
-This project combines the best parts of both.
-
-Professionals who demand technical excellence AND aesthetic excellence. 
-
-## Minimalism
-
-The system builds itself in layers so it's incredibly lightweight, bloat free, and completely reproducible.
-
-Also, good design is invisible.
-
-One thing worse than bloated Electron apps eating RAM is interrupting my focus with unnecessary data.
-
-I have a big issue with bloated menus, icons everywhere, flashy drop downs, too many built in apps, 55 choices to choose from, and so on. 
-
-All to guide a standard user.
-
-Here, all that is nuked, all of it. Not even the top bar exists.
-
-**Everything that needs to be seen surfaces only when it needs to be seen.**
+All of it is nuked. Even the top bar is gone. Everything only surfaces when you actually need to see it.
 
 ### Zero cognitive pollution
 
-This works like an event-driven fighter jet HUD.
+**On-demand metrics:** Vitals surface only when you need to them: Notifications show alerts only when the battery hits 50%, 33%, 25%, 15%, 10%, and 5%. If thermals spike or network drops, the system auti-notifies you.
 
-For example, vitals surface only when actionable: Notifications alert you when the battery hits 50%, 33%, 25%, 15%, 10%, and 5%. If thermals spike or network drops, the system notifies you.
+Need time or system status? Hit `Alt + M` to invoke the control center or check Starship in your terminal. Otherwise, the desktop is completely empty.
 
-Watching a battery icon sit at 97%, staring at a clock tick away seconds, or looking at static workspace indicators constantly steals focus and cause anxiety.
+There's not even a workspace indicator: `Super + 1` is always workspace one (Obsidian). `Super + 2` is always 2 and so on (browser). `Super + 3` is always terminal. 
 
-**On-demand metrics:** Need time or system status? Hit `Alt + M` to invoke the control center or check Starship in your terminal. Otherwise, the desktop is completely empty and dark.
-
-There's not even a workspace indicator: `Super + 1` is always notes. `Super + 2` is always browser. `Super + 3` is always terminal. Spatial memory makes workspace indicators redundant.
+Spatial memory makes workspace indicators redundant.
 
 ### Keybinds
 
-Almost everything is a keyboard shortcut, no menus.
+Keyboard shortcut is the way, no dropdowns/menus/icons.
 
 | Keys | Action |
 | :--- | :--- |
@@ -159,8 +119,6 @@ Almost everything is a keyboard shortcut, no menus.
 | `Super + F` | Full screen |
 | `Super + Q` | Close window |
 
-The workflow is split between global keybinds and the CLI. No start menus, dropdowns, or clickable icons needed.
-
 Set up a key and so on, till the keys run out.
 
 But the prime real estate ran out a long time ago, so the CLI handles the rest.
@@ -169,7 +127,7 @@ But the prime real estate ran out a long time ago, so the CLI handles the rest.
 
 Most tasks are handled through `fzf` autocompletion, as there's only so much one can remember.
 
-This includes everything from encryption, 2FA codes, network management, cloud analysis, reminders, syncing packages across Rust, TypeScript, Go, Python, APT, and whatever else, to Git ops, pull request management, reviews, submits, ISO flashing, video editing, audio routing, and much more.
+This includes everything from encryption, 2FA codes, network management, cloud analysis, reminders, syncing packages across Rust, TypeScript, Go, Python, APT, and whatever else, to Git ops, pull request management, reviews, submits, even ISO flashing, video editing, audio routing, and much more.
 
 Slowly releasing this since I need time to decouple from my personal setup.
 
@@ -179,37 +137,25 @@ Which if you think about it, what does really require a full blown GUI?
 
 ### Apps
 
-Speaking of GUIs: apps behave like native apps. For example, `app sc` launches SoundCloud, `app yt` for YouTube, with Hyprland: `Super + F` for fullscreen, and `Super + Q` to quit. It's significantly faster than fumbling with browser tabs and saves seconds of friction every time.
+Apps behave like native apps. For example, `app sc` launches SoundCloud, `app yt` for YouTube, with Hyprland: `Super + F` for fullscreen, and `Super + Q` to quit. It's significantly faster than fumbling with browser tabs and saves seconds of friction every time.
 
-## Idempotent Engineering
+## My Custom Tooling
 
-When you install standard software, stale directories linger deep inside ~/.cache, ~/.config, and /tmp forever. Or when you install a stardard setup, you're forced to use tool possible.
+These are my custom programs:
 
-Here, every project under the osyx umbrella follows the Terraform rule: you can either apply or destroy.
-
-Want speech recognition? Install asryx.
-
-Want to remove it? Run the uninstaller. Every single byte is wiped clean as if it was never installed.
-
-Even tools that are not made by me, for example, don't like your hyprland version anymore? Take hyprtryx and run destroy, update the versions of deps & apply again, and reboot.
-
-## Built-In Custom Tooling
-
-`osyx` uses custom native programs engineered AND designed specifically for this setup:
-
-| Package | Language / Tech | Description |
+| Package | Written | Description |
 | :--- | :--- | :--- |
 | **[`asryx`](https://github.com/rccyx/asryx)** | C++ | Offline, daemonless voice-to-text CLI (GGML Whisper + Silero VAD). Zero idle RAM. |
 | **[`lookas`](https://github.com/rccyx/lookas)** | Rust | Auditory-perceptual audio visualizer using Mel scaling & spring damper physics. |
 | **[`thyx`](https://github.com/rccyx/thyx)** | QML | Atomic SDDM login screen with video backgrounds and PAM fingerprint auth. |
 | **[`powyx`](/packages/powyx)** | QML / Shell | Zero-overhead power menu HUD (`lock`, `suspend`, `reboot`, `shutdown`). |
-| **[`ctrlyx`](https://github.com/rccyx/ctrlyx)** | C++ / QML | Daemonless control center HUD for hardware stats, audio, and network management. |
+| **`ctrlyx`** | C++ / QML | Daemonless control center HUD for hardware stats, weather, network management, and more. |
 | **[`flavors`](/packages/flavors)** | Python | Dynamic color engine that generates matching themes across the desktop/login |
 | **[`hyprtryx`](/packages/hyprtryx)** | Shell / Make | Bare-metal builder compiling Hyprland (`v0.56+`) and the hypr ecosystem dependencies from source on Trixie. |
 
 ### Core utilities
 
-| Layer | What |
+| Layer | Pin |
 | :--- | :--- |
 | Distro | Debian `v13` |
 | Display | Wayland `v1.24.0` |
@@ -220,39 +166,37 @@ Even tools that are not made by me, for example, don't like your hyprland versio
 | Shell | Zsh `v5.9` + Starship `v1.23.0` + Lsd `v1.1.5` |
 | Notifications | Mako `v1.10.0-1` |
 | Launcher / Clipboard | Wofi `v1.4.1` (UI), custom backend |
-| Fonts | Inter (sans), Iosevka (mono), Meslo (Nerd Font fallback), Jakarta Sans (login) |
+| [Fonts](https://github.com/rccyx/osyx/releases/tag/fonts-v1.0.0) | Inter (sans), Iosevka (mono), Meslo (Nerd Font fallback), Jakarta Sans (login) |
 | Audio | PipeWire `v1.4.2` |
 
 ## Bootstrap
 
-There's a bootstrap setup but still wip, have a look at this [CI workflow](./.github/workflows/on-workflow-call-bootstrap.yml).
+There's a bootstrap setup but still wip. 
+
+Have a look at this [CI workflow](./.github/workflows/on-workflow-call-bootstrap.yml).
 
 The bootstrap process is like this:
 
 | Stage | Name | What it does |
 | :--- | :--- | :--- |
-| 0 | Root Bootstrap | Boots a fresh Debian install (doesn't even have sudo). Sets up network interfaces, core system packages, user privileges, and atomic state directories. |
+| 0 | Root Bootstrap | Boots a fresh Debian install (bare metal). Sets up network interfaces, core system packages, user privileges, and atomic state directories. |
 | 1 | User Bootstrap | Configures user groups (audio, video, input, etc), installs base display libraries, sets Zsh as default shell, and provisions language runtimes/package managers (rust, node, go, uv, etc). |
-| 2 | Hyprland/Wayland | Invokes hyprtryx to compile the visual desktop so we exit the TTY lobby, Wayland protocols, and dependencies natively for the host CPU architecture. |
+| 2 | Hyprland/Wayland | Invokes hyprtryx to compile the visual desktop so we exit the TTY gulag, Wayland protocols, and dependencies natively for the host CPU architecture. |
 | 3 | Workstation Layer | Provisions custom binaries (asryx, thyx, lookas, powyx, etc), generates global visual themes via flavors, and hooks up event notifications. |
 
-Mind you, this is Debian, the hyprland builder is able to build Hyprland from source (and the related projects like hyprlock, hyprsunset, etc.).
+Mind you, this is Debian, the hyprland builder is able to build Hyprland from source (and the related hypr projects like hyprlock, hyprsunset, etc.).
 
-### My Vision
-
-"Jesus Christ... that's Jason Bourne".
-
-Jason Bourne can walk into an empty room, grab whatever bare-bones hardware is lying around, and instantly turn it into a high-tech tactical command center.
+### Future Vision
 
 When this is done, basically all you need is a USB stick with a bare metal distro and `curl`.
 
-You run it, and minutes later a completely empty machine morphs into this exact hyper optimized workstation.
+You Jason Bourne with one command, and minutes later a completely empty machine morphs into this exact hyper optimized workstation.
 
 Totally disposable and reproducible. **No ISO needed.**
 
 ## Can I use this today?
 
-Yes. You don't have to wait for a final automated one-command installer.
+Yes. 
 
 The full public one command install is not available yet, so the way to go by this right now is component extraction. 
 
@@ -269,7 +213,7 @@ osyx/
 
 ## Custom Tools
 
-These are standalone tools written from scratch, that can be airdropped into any distro.
+Standalone tools written from scratch. Can be airdropped into any distro.
 
 ### [lookas](https://github.com/rccyx/lookas)
 
@@ -291,9 +235,11 @@ Pure C++ voice to text binary for Linux, done the UNIX way. No dependencies beyo
 
 It links to GGML Whisper (100% offline), records through the active Linux audio stack, transcribes locally, copies the output, notifies the session, and exits.
 
-Tap once, speak for as long as you want, tap again, that's it. Basically never errors out, and it comes in handy in a keyboard only workflow. Supports 99 languages through the model weights.
+Tap once, speak for as long as you want, tap again, that's it. Basically never errors out, and it comes in handy in a keyboard only workflow. 
 
-One command install and uninstall, and the CLI handles everything. UX for Linux is peak.
+One command install and uninstall, and the CLI handles everything. 
+
+UX for Linux is peak.
 
 <p align="center">
   <a href="https://github.com/rccyx/asryx">
@@ -305,9 +251,11 @@ One command install and uninstall, and the CLI handles everything. UX for Linux 
 
 A QML based SDDM login screen, with video backgrounds, fingerprint authentication support, and a composable design system.
 
-Composable as in, you can configure it to your liking, although it ships with a bunch of presets in case you want to plug in right away or take inspiration from. If you don't like them, make your own, and it'll still look good.
+Composable as in, you can configure it to your liking. 
 
-Comes with stateful and safe install/uninstall, of course.
+It ships with a bunch of presets in case you want to plug in right away or take inspiration from. If you don't like them, make your own, and it will still look good.
+
+Comes with stateful and safe install/uninstall.
 
 <div align="center">
   <video title="demo" src="https://github.com/user-attachments/assets/4e52f9d0-ac04-4167-adfc-d14506e9c59c" width="100%" controls>
@@ -316,31 +264,52 @@ Comes with stateful and safe install/uninstall, of course.
 </div>
 
 
-### ctrlyx
+### [powyx](/packages/powyx)
 
-This is the control center. C++23 with a QML UI, compiled into a 0.5MB binary. No Electron and no GTK widget.
+The power menu. One command install/uninstall. Works on any distro as long as you have QML deps.
 
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/5c0f9719-132b-433d-8053-b591ca7b3598" />
+<div align="center">
+  <video title="demo" src="https://github.com/user-attachments/assets/3444d5d2-3ed1-45a0-a5d9-a578ccbc1e42" width="100%" controls>
+    Your browser does not support the video tag.
+  </video>
+</div>
 
-You hit `Alt + M` and it pops up (overlay full screen on Hyprland) instantly: Weather, Wi-Fi, Bluetooth, VPN, focus mode, brightness, volume, CPU, RAM, temps, uptime and every device you're connected to.
+
+You only configure it once like this (here `~/.config/powyx/powyx.toml`):
+
+```toml
+[actions]
+lock = "hyprlock"
+suspend = "systemctl suspend"
+reboot = "systemctl reboot"
+shutdown = "systemctl poweroff"
+
+[theme]
+confirm = "#E7BE5B" 
+```
+
+Although, if you use the [flavors](/packages/flavors/) package, you won't need to manually change colors, it will auto adapt.
+
+### ctrlyx (unreleased)
+
+This is the control center. C++23 backend with a QML UI, compiled into a 0.5MB binary. No Electron and no GTK widget.
+
+
+<div align="center">
+  <video title="demo" src="https://github.com/user-attachments/assets/985d4fb3-2e9d-416d-9fca-b57bf48ebb70" width="100%" controls>
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+You hit a keybind (i.e `Alt + M`) and it pops up (overlay full screen on Hyprland) instantly: Weather, Wi-Fi, Bluetooth, VPN, focus mode, brightness, volume, CPU, RAM, temps, uptime and every device you're connected to.
 
 One screen with a glassmorphic UI that works on almost any background.
 
 Press `Esc` to close it or click up top.
 
-#### It follows the Unix philosophy
-
-It delegates to your setup, your scripts, your binaries or whatever you already use.
+Also, it delegates to your setup, your scripts/binaries or whatever you already use.
 
 You configure it once. For every control you tell it three things: the command to turn it on, the command to turn it off, and the command to check status. 
-
-Some things are hardcoded on purpose, like brightness and sound. Those are smooth and automatic, no config needed.
-
-#### Ergonomics
-
-It's built for keyboard-first use. I never use a mouse, so the design follows that: brightness and sound are big pill-shaped sliders on the left, easy to land on and easy to roll with my right thumb.
-
-Way better than fumbling with a tiny window up top or hunting for the F-keys.
 
 ## License
 
