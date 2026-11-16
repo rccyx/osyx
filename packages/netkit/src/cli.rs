@@ -1,5 +1,6 @@
 use crate::{
     dns::Lookup,
+    traffic::WatchOptions,
     unix::Arguments,
     wifi::{WifiInterface, WifiOptions},
 };
@@ -29,6 +30,10 @@ pub enum Commands {
     Netspeed(Arguments),
     /// Inspect live traffic by process, connection, and remote address (bandwhich)
     Traffic(Arguments),
+    /// Watch TCP/UDP sockets, listeners, and their owning processes (ss)
+    Watch(WatchOptions),
+    /// Stream packet headers, including incoming pings (tcpdump)
+    Capture(Arguments),
     /// Measure internet upload, download, and latency (Cloudflare)
     Speed(Arguments),
     /// Graph latency to hosts (gping)

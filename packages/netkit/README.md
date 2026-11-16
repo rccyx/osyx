@@ -37,6 +37,8 @@ Requires Linux, Rust 1.95+, and the relevant system dependencies. The installati
 | `netkit routes` | Show the routing table |
 | `netkit netspeed` | Monitor network bandwidth |
 | `netkit traffic` | Inspect traffic by process and connection |
+| `netkit watch` | Watch TCP/UDP sockets, listeners, PIDs, and process names |
+| `netkit capture` | Stream packet headers, including incoming pings |
 | `netkit speed` | Test internet speed and latency |
 | `netkit ping <host>` | Graph network latency |
 | `netkit trace <host>` | Interactive traceroute |
@@ -69,4 +71,29 @@ netkit traffic -- --interface wlan0 --raw
 netkit speed -- --text --auto-save false
 netkit trace google.com --unprivileged
 netkit scan -- --interface=wlan0
+```
+
+For continuous inspection, use separate terminals:
+
+```bash
+sudo ~/.local/bin/netkit traffic
+sudo ~/.local/bin/netkit watch --exclude chrome
+sudo ~/.local/bin/netkit capture
+```
+
+`watch` refreshes every second.
+
+Repeat `--exclude` for exact process names sockets with unknown owners or another owner remain visible. 
+
+Use `--once` for a single snapshot. 
+
+`capture` uses the installed `tcpdump` on all interfaces, showing numeric
+addresses and packet summaries without printing payloads by default.
+
+It observes incoming and outgoing packets, including traffic without an
+owning socket. Pass tcpdump options or capture filters after `--`:
+
+```bash
+sudo ~/.local/bin/netkit capture -- -Q in
+sudo ~/.local/bin/netkit capture -- 'icmp or icmp6'
 ```

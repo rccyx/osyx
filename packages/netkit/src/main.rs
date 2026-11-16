@@ -1,6 +1,7 @@
 mod cli;
 mod dns;
 mod trace;
+mod traffic;
 mod unix;
 mod wifi;
 
@@ -47,5 +48,7 @@ fn _run(command: Commands) -> anyhow::Result<()> {
         Commands::Trace(arguments) => trace::run(arguments),
         Commands::Dns(query) => dns::lookup(query),
         Commands::Scan(arguments) => unix::scan(arguments),
+        Commands::Watch(options) => traffic::watch(&options),
+        Commands::Capture(arguments) => traffic::capture(arguments),
     }
 }

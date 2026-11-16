@@ -18,6 +18,11 @@ fn tools_receive_arguments_without_shell_interpretation() -> Result<()>
         ("netspeed", "bandwhich", vec![]),
         ("speed", "cloudflare-speed-cli", vec![]),
         ("traffic", "bandwhich", vec![]),
+        (
+            "capture",
+            "tcpdump",
+            vec!["-i", "any", "-nn", "-tttt", "-l", "-q"],
+        ),
         ("ping", "gping", vec![]),
         ("status", "ip", vec!["-brief", "address"]),
         ("routes", "ip", vec!["route"]),
@@ -144,7 +149,7 @@ fn every_command_exposes_help_without_dependencies() -> Result<()> {
     let fixture = Fixture::_new()?;
     for command in [
         "wifi", "qr", "status", "routes", "netspeed", "traffic",
-        "speed", "ping", "trace", "dns", "scan",
+        "speed", "ping", "trace", "dns", "scan", "watch", "capture",
     ] {
         let execution = fixture._invoke(&[command, "--help"])?;
         assert!(
@@ -156,6 +161,56 @@ fn every_command_exposes_help_without_dependencies() -> Result<()> {
                 .contains("Usage:")
         );
     }
+    Ok(())
+}
+
+#[test]
+fn watch_excludes_only_sockets_owned_entirely_by_named_processes()
+-> Result<()> {
+    let fixture = Fixture::_new()?;
+    let rows = [
+        "Netid State Local Peer Process",
+        "tcp ESTAB local remote users:((\"chrome\",pid=1,fd=2))",
+        "tcp ESTAB local remote users:((\"chrome\",pid=1,fd=2),(\"cargo\",pid=3,fd=4))",
+        "tcp ESTAB local remote users:((\"chrome-helper\",pid=5,fd=6))",
+        "udp UNCONN local remote",
+    ];
+    fixture._install_body((
+        "ss",
+        &format!("while IFS= read -r row; do printf '%s\\n' \"$row\"; done <<'SOCKETS'\n{}\nSOCKETS\n", rows.join("\n")),
+    ))?;
+    let execution = fixture._invoke(&[
+        "watch",
+        "--once",
+        "--exclude",
+        "chrome",
+    ])?;
+    assert!(execution.status.success(), "{execution:?}");
+    let lines = _lines(&execution);
+    assert!(!lines.iter().any(|line| line == rows[1]));
+    for row in [rows[0], rows[2], rows[3], rows[4]] {
+        assert!(
+            lines.iter().any(|line| line == row),
+            "missing {row}"
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn watch_rejects_incomplete_socket_snapshots() -> Result<()> {
+    let fixture = Fixture::_new()?;
+    fixture._install_body((
+        "ss",
+        "printf 'netlink denied\\n' >&2\nexit 0\n",
+    ))?;
+    let execution = fixture._invoke(&["watch", "--once"])?;
+    assert_eq!(execution.status.code(), Some(1));
+    assert!(
+        String::from_utf8_lossy(&execution.stderr)
+            .contains("netlink denied")
+    );
+    assert!(execution.stdout.is_empty());
     Ok(())
 }
 
@@ -195,7 +250,8 @@ impl Fixture {
 
     fn _install_body(&self, script: (&str, &str)) -> Result<()> {
         let (tool, body) = script;
-        let directory = if tool == "impala" {
+        let directory = if matches!(tool, "impala" | "ss" | "tcpdump")
+        {
             "bin"
         } else {
             "libexec/netkit/bin"

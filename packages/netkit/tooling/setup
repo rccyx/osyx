@@ -4,12 +4,13 @@ set -euo pipefail
 repository_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repository_root"
 
-if ! command -v iwctl >/dev/null || ! command -v qrencode >/dev/null; then
+if ! command -v iwctl >/dev/null || ! command -v qrencode >/dev/null ||
+    ! command -v ss >/dev/null || ! command -v tcpdump >/dev/null; then
     if ! command -v apt-get >/dev/null; then
-        printf 'Install iwd and qrencode with your package manager, then run just setup again.\n' >&2
+        printf 'Install iwd, qrencode, iproute2, and tcpdump with your package manager, then run just setup again.\n' >&2
         exit 1
     fi
-    sudo apt-get install --no-install-recommends iwd qrencode
+    sudo apt-get install --no-install-recommends iwd qrencode iproute2 tcpdump
 fi
 
 if ! command -v impala >/dev/null; then
