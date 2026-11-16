@@ -53,7 +53,18 @@ jobs:
     if: needs.syncer-changes.outputs.changed == 'true'
     uses: ./.github/workflows/on-workflow-call-syncer.yml
 
+  totpyx-changes:
+    uses: ./.github/workflows/on-workflow-call-changes.yml
+    with:
+      directory: packages/totpyx
+      ignore_docs: true
 
+  totpyx:
+    needs: syncer-changes
+    if: needs.totpyx-changes.outputs.changed == 'true'
+    uses: ./.github/workflows/on-workflow-call-totpyx.yml
+
+  
   lint:
     needs: [secrets, changes]
     if: needs.changes.outputs.changed == 'true'
