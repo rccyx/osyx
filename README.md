@@ -209,6 +209,8 @@ osyx/
 └── docs/           # Docs
 ```
 
+Read the [docs](/docs/starting.md).
+
 ## Custom Tools
 
 Standalone tools written from scratch. Can be airdropped into any distro.
