@@ -1,5 +1,5 @@
 # Set this to your GPG key's full fingerprint.
-# github.com/rccyx/totpyx
+# packages/totpyx
 typeset -gr TFA_GPG_FINGERPRINT='79821E0224D34EC4969FF6A8E5168EE090AE80D0'
 (( ${+TFA_STORE_DIR} )) || typeset -gr TFA_STORE_DIR="${PASSWORD_STORE_DIR:-$HOME/.2fa}"
 
