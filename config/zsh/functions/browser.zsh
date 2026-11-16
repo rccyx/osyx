@@ -1,6 +1,5 @@
 browser() {
   local browsers
-  # Added opera to the list below
   browsers=$(printf "%s\n" \
     opera \
     firefox \
@@ -26,6 +25,9 @@ browser() {
 
   [ -z "$choice" ] && return
 
-  # This kicks it off into the background so it doesn't hang your terminal
-  nohup "$choice" >/dev/null 2>&1 &
+  # Launch in a new session, redirect all output, and remove from shell job control
+  setsid -f "$choice" </dev/null >/dev/null 2>&1 || {
+    nohup "$choice" </dev/null >/dev/null 2>&1 &
+    disown
+  }
 }
