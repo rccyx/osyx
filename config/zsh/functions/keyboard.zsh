@@ -1,4 +1,4 @@
-keyboard() {
+kb() {
   emulate -L zsh
   setopt localoptions errreturn pipefail
 
