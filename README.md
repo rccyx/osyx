@@ -59,9 +59,9 @@
 
 This is a bespoke OS layer that attaches to a clean base OS. 
 
-Not dots (although they're included anyway), nor a distro (anyone can call anything a distro). 
+Not dots (although they're included anyway), nor a distro (anything is a distro these days). 
 
-Starting with bare Debian Trixie for now, and extending to others in the future (Arch, etc). 
+Starting with bare Debian (Trixie) for now, and extending to others in the future (Arch, etc). 
 
 Which converts a blank TTY into a hyper optimized and premium looking workstation in minutes.
 
@@ -71,23 +71,21 @@ If a program doesn't fit, I just make a custom made one that's suited.
 
 It gives a pristine, premium feel of macOS built on 100% open-source software.
 
-It's been my daily driver for years at this point. It doesn't embarrass me in meetings, excellent for engineering, it doesn't brick on Monday mornings, it just works. 
+It's been my daily driver for years at this point. Excellent for engineering, it doesn't brick on Monday mornings, it just works and looks good. 
 
-And I haven't touched macOS/Windows in years.
+I haven't touched macOS/Windows in years.
 
-I recently started open-sourcing this whole setup, so I'm dropping projects one by one (whenever I have time).
+Recently, I started open-sourcing this whole setup, so I'm dropping projects one by one.
 
 ## Product
 
 I want my computing experience to operate like a HUD, but also look beautiful.
 
-I removed everything that doesn't need to be there this down to bare metal so it just does the job and nothing else. The system builds itself layer by layer, so when it builds, it's lightweight, bloat-free, and completely reproducible and extendable.
+I have an issue with bloated menus, icons everywhere, flashy drop downs, too many built in apps, choice fatigue, etc.
 
-Last thing I want is a bloated Electron app eating up RAM or interrupting my focus with random data. 
+So, everything  here that doesn't need to be there is removed. The system builds itself layer by layer. When it builds, it's lightweight, bloat-free, and completely reproducible and extendable.
 
-I have a big issue with bloated menus, icons everywhere, flashy drop downs, too many built in apps, choice fatigue, etc.
-
-All of it is nuked. Even the top bar is gone. Everything only surfaces when you actually need to see it.
+Even the top bar is gone. Everything only surfaces when you actually need to see it.
 
 ### Zero cognitive pollution
 
@@ -139,7 +137,7 @@ Which if you think about it, what does really require a full blown GUI?
 
 Apps behave like native apps. For example, `app sc` launches SoundCloud, `app yt` for YouTube, with Hyprland: `Super + F` for fullscreen, and `Super + Q` to quit. It's significantly faster than fumbling with browser tabs and saves seconds of friction every time.
 
-## My Custom Tooling
+## Custom Tooling
 
 These are my custom programs:
 
@@ -152,6 +150,8 @@ These are my custom programs:
 | **`ctrlyx`** | C++ / QML | Daemonless control center HUD for hardware stats, weather, network management, and more. |
 | **[`flavors`](/packages/flavors)** | Python | Dynamic color engine that generates matching themes across the desktop/login |
 | **[`hyprtryx`](/packages/hyprtryx)** | Shell / Make | Bare-metal builder compiling Hyprland (`v0.56+`) and the hypr ecosystem dependencies from source on Trixie. |
+
+And other smaller utilities under `./packages`.
 
 ### Core utilities
 
@@ -170,8 +170,6 @@ These are my custom programs:
 | Audio | PipeWire `v1.4.2` |
 
 ## Bootstrap
-
-There's a bootstrap setup but still wip. 
 
 Have a look at this [CI workflow](./.github/workflows/on-workflow-call-bootstrap.yml).
 
@@ -198,7 +196,7 @@ Totally disposable and reproducible. **No ISO needed.**
 
 Yes. 
 
-The full public one command install is not available yet, so the way to go by this right now is component extraction. 
+Thre's no one command install yet, so the way to go by this right now is component extraction. 
 
 Just grab what you want & wire it into your own setup.
 
