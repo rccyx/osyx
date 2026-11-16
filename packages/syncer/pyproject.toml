@@ -1,0 +1,37 @@
+[project]
+name = "syncer"
+version = "0.0.1"
+description = "Package syncer"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = ["rich>=15.0.0"]
+
+[project.scripts]
+syncer = "syncer.cli:main"
+
+[build-system]
+requires = ["hatchling>=1.33.0"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = ["mypy>=2.4.1", "ruff>=0.17.5"]
+
+[tool.mypy]
+strict = true
+pretty = true
+show_error_codes = true
+strict_optional = true
+warn_unused_ignores = true
+explicit_package_bases = true
+ignore_missing_imports = true
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

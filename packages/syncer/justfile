@@ -1,0 +1,42 @@
+alias i := install
+alias l := lint
+alias f := format
+
+@help:
+    just --list
+
+@install:
+    uv tool install --reinstall .
+
+@uninstall:
+    uv tool uninstall syncer
+
+@sync:
+    uv sync --locked
+
+@lint:
+    uv run --locked ruff check .
+    uv run --locked ruff format --check .
+    uv run --locked mypy .
+
+@format:
+    uv run --locked ruff check --fix .
+    uv run --locked ruff format .
+
+@run *args:
+    uv run --locked syncer {{args}}
+
+@build:
+    uv build
+
+@smoke: build
+    #!/usr/bin/env bash
+    set -euo pipefail
+    snapshot_dir="$(mktemp -d)"
+    trap 'rmdir "$snapshot_dir"' EXIT
+    _run_from_wheel() {
+        uv run --isolated --no-project --with dist/*.whl syncer "$@"
+    }
+    _run_from_wheel --help
+    _run_from_wheel restore --help
+    _run_from_wheel --pkg-dir "$snapshot_dir" status

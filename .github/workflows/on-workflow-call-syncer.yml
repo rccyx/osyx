@@ -1,0 +1,40 @@
+name: syncer
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: build, smoke, lint and format
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: packages/syncer
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v7
+
+      - name: set up uv and Python
+        uses: astral-sh/setup-uv@v10
+        with:
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: packages/syncer/uv.lock
+
+      - name: set up just
+        uses: extractions/setup-just@v4
+
+      - name: sync dependencies
+        run: just sync
+
+      - name: lint, format and types
+        run: just lint
+
+      - name: build and smoke
+        run: just smoke
