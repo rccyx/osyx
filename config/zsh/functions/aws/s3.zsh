@@ -452,6 +452,64 @@ _s3_list_all_keys(){
   done
 }
 
+s3(){
+  emulate -L zsh
+  case "${1:-}" in
+    up)      shift; s3up "$@"; return ;;
+    down)    shift; s3down "$@"; return ;;
+    ls)      shift; s3ls "$@"; return ;;
+    rm)      shift; s3rm "$@"; return ;;
+    buckets) shift; s3buckets "$@"; return ;;
+    who)     shift; s3who "$@"; return ;;
+    ""|-h|--help|help) ;;
+    *) _err "unknown subcommand: $1 (run 's3' for help)"; return 1 ;;
+  esac
+
+  local cur_bucket="${S3_BUCKET:-%F{244}(interactive fzf prompt)%f}"
+  local cur_region="$(_s3_region)"
+  local fzf_stat="%F{1}missing%f"
+  command -v fzf >/dev/null 2>&1 && fzf_stat="%F{2}enabled%f"
+
+  _hr
+  print -P "%B%F{6}S3 CLI Helpers%f%b  %F{244}(resumable MPU + byte-range downloads)%f"
+  _hr
+  print -P "%BActive Config:%b"
+  print -P "  Bucket:  %F{3}${cur_bucket}%f   Region: %F{3}${cur_region}%f   fzf: ${fzf_stat}"
+  print -P "  MPU:     >= %F{6}${S3_MPU_THRESHOLD_MB} MiB%f (${S3_MPU_PART_MB} MiB parts, ${S3_MPU_CONCURRENCY} threads, ${S3_RETRY_MAX} retries)"
+  print -P "  State:   %F{244}$(_s3_state_dir)%f"
+  echo
+  print -P "%BCommands:%b"
+  print -P "  %F{2}s3up%f %F{244}[file|dir ...]%f"
+  print -P "      Upload files or folders (auto-creates private AES256 bucket if missing)."
+  print -P "      Files >= ${S3_MPU_THRESHOLD_MB} MiB use chunked MPU; re-run to resume interrupted uploads."
+  print -P "      %F{244}No args → interactive fzf picker in current directory.%f"
+  print -P "      %F{6}ex:%f s3up big-model.tar.gz ./dataset/"
+  echo
+  print -P "  %F{2}s3down%f %F{244}[key|prefix/ ...] [dest_dir]%f"
+  print -P "      Download files (resumes partial files via byte-range) or folders (%F{3}prefix/%f)."
+  print -P "      %F{244}No keys → interactive fzf multi-select from bucket.%f"
+  print -P "      %F{6}ex:%f s3down backups/2026/ ./restore/"
+  echo
+  print -P "  %F{2}s3ls%f %F{244}[bucket] [prefix]%f"
+  print -P "      Browse bucket keys with size/timestamp preview in fzf (or TSV if no fzf)."
+  print -P "      %F{6}ex:%f s3ls my-bucket logs/"
+  echo
+  print -P "  %F{2}s3rm%f %F{244}[key|prefix/ ...]%f"
+  print -P "      Delete objects or recursive folders (%F{3}prefix/%f). Requires %F{3}DELETE%f or bucket name confirmation."
+  print -P "      %F{244}No args → interactive fzf picker showing <DIR> prefixes first.%f"
+  print -P "      %F{6}ex:%f s3rm old-dump.sql tmp-folder/"
+  echo
+  print -P "  %F{2}s3buckets%f   List all S3 buckets in your AWS account."
+  print -P "  %F{2}s3who%f       Verify active AWS credentials & IAM identity."
+  echo
+  print -P "%BEnvironment Overrides:%b"
+  print -P "  %F{3}S3_BUCKET%f=my-bucket          %F{244}# Skip bucket picker and target this bucket%f"
+  print -P "  %F{3}S3_MPU_CONCURRENCY%f=6         %F{244}# Parallel upload threads (default: 3)%f"
+  print -P "  %F{3}S3_MPU_PART_MB%f=128           %F{244}# Multipart chunk size in MiB (default: 64)%f"
+  print -P "  %F{3}S3_MPU_THRESHOLD_MB%f=256      %F{244}# Min file size for MPU (default: 256)%f"
+  _hr
+}
+
 # ---------- s3ls ----------
 s3ls(){
   emulate -L zsh

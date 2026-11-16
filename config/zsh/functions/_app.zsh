@@ -78,7 +78,7 @@ app() {
   if [[ -z ${WEBAPP_PROFILE-} ]]; then
     if [[ ${target} == https://chatgpt.com* ]]; then
       profile="Profile 4"
-    elif [[ ${target} == https://gemini.google.com* ]]; then
+    elif [[ ${target} == https://gemini.google.com* ||  ${target} == https://claude.ai*  ]]; then
       profile="Profile 3"
     elif [[ ${target} == https://web.telegram.org* || ${target} == https://www.icloud.com* ]]; then
       profile="Profile 2"
