@@ -41,6 +41,7 @@ EOF
   local lock_dir="${state_base}/lock"
   local pid_file="${state_base}/rec.pid"
   local path_file="${state_base}/rec.path"
+  local log_file="${state_base}/rec.log"
 
   if ! mkdir "$lock_dir" 2>/dev/null; then
     local holder
@@ -176,12 +177,14 @@ EOF
     [[ "$no_cursor" == true ]] && args+=(--no-cursor)
     [[ -n "$resolution" ]]     && args+=(--encode-resolution "$resolution")
 
-    wl-screenrec "${args[@]}" >/dev/null 2>&1 &!
+    wl-screenrec "${args[@]}" >"$log_file" 2>&1 &!
     local pid=$!
 
     sleep 0.4
     if ! kill -0 "$pid" 2>/dev/null; then
-      notify-send -a "$APP_NAME" "$TITLE_ERROR" "Screen recorder failed to start." -u critical -t 5000 2>/dev/null
+      print -u2 -- "Screen recorder failed to start. Log: $log_file"
+      cat -- "$log_file" >&2
+      notify-send -a "$APP_NAME" "$TITLE_ERROR" "Screen recorder failed to start.\nLog: $log_file" -u critical -t 5000 2>/dev/null
       for mod_file in $(find "$state_base" -maxdepth 1 -name "pa_mod_*.id" 2>/dev/null); do
         pactl unload-module "$(cat "$mod_file")" 2>/dev/null || true
         rm -f "$mod_file"
