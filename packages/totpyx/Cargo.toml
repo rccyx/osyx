@@ -1,0 +1,40 @@
+[package]
+name = "totpyx"
+version = "1.0.0"
+edition = "2021"
+
+description = "Minimal, dependency-free RFC 6238 TOTP implementation"
+license = "Apache-2.0"
+
+readme = "README.md"
+repository = "https://github.com/rccyx/totpyx"
+homepage = "https://github.com/rccyx/totpyx"
+documentation = "https://docs.rs/totpyx"
+
+keywords = ["totp", "otp", "rfc6238", "rfc4226", "2fa"]
+categories = ["cryptography", "authentication"]
+
+authors = ["rccyx"]
+rust-version = "1.70"
+
+include = [
+    "src/**/*",
+    "Cargo.toml",
+    "README.md",
+    "LICENSE",
+]
+
+[lib]
+name = "totpyx"
+path = "src/lib.rs"
+
+[[bin]]
+name = "totpyx"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = "symbols"

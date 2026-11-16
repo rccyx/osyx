@@ -1,0 +1,12 @@
+# @see https://github.com/rccyx/rlyx
+
+default_bump = "patch"
+bump_commit_message = "bump to {{version}}"
+bump_tag_message    = "release {{version}}"
+post_bump_command = ""
+
+
+[changelog]
+enable = false
+path   = "CHANGELOG.md"
+

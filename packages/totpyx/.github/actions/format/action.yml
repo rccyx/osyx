@@ -1,0 +1,9 @@
+name: Format
+description: Run the format stage of CI.
+
+runs:
+  using: composite
+  steps:
+    - uses: ./.github/actions/setup-rust
+    - run: cargo fmt --all -- --check
+      shell: bash

@@ -1,0 +1,9 @@
+name: Test
+description: Run the test stage of CI.
+
+runs:
+  using: composite
+  steps:
+    - uses: ./.github/actions/setup-rust
+    - run: cargo test
+      shell: bash

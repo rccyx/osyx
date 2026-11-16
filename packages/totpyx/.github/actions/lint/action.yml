@@ -1,0 +1,9 @@
+name: Lint
+description: Run the lint stage of CI.
+
+runs:
+  using: composite
+  steps:
+    - uses: ./.github/actions/setup-rust
+    - run: cargo clippy --all-features -- -D warnings -A incomplete_features -W clippy::dbg_macro -W clippy::print_stdout
+      shell: bash
