@@ -1,6 +1,0 @@
-alias l := lint
-
-@lint:
-	bash -n main lib/*.sh
-	shellcheck -x main lib/*.sh
-
