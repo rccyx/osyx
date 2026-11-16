@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+_install_crate() {
+    local crate="$1" version="$2"
+    local features=()
+    case "$crate" in
+        cloudflare-speed-cli) features=(--features tui) ;;
+    esac
+    cargo install "$crate" --version "=$version" --locked \
+        --root "$bundle_root/libexec/netkit" --target-dir "$repository_root/target" \
+        --no-default-features "${features[@]}"
+    local archives=("${CARGO_HOME:-$HOME/.cargo}"/registry/cache/*/"$crate-$version.crate")
+    install -m 644 "${archives[0]}" "$bundle_root/share/netkit/sources/"
+}
+
+_extract_deb() {
+    local package="$1" version="$2"
+    local cache="$repository_root/target/debian/$package"
+    local archive="$cache/${package}_${version}_$(dpkg --print-architecture).deb"
+    mkdir -p "$cache"
+    if [[ ! -f "$archive" ]]; then
+        (cd "$cache" && apt-get download "$package=$version" >&2)
+    fi
+    dpkg-deb -x "$archive" "$cache/extracted"
+    printf '%s: %s\n' "$package" "$version" >> "$bundle_root/share/netkit/system-packages.txt"
+    printf '%s\n' "$cache/extracted"
+}
+
+_bundle_arp_scan() {
+    local extracted
+    extracted="$(_extract_deb arp-scan 1.10.0-2+b1)"
+    install -m 755 "$extracted/usr/sbin/arp-scan" "$bundle_root/libexec/netkit/bin/arp-scan"
+    mkdir -p "$bundle_root/share/netkit/arp-scan"
+    cp -a "$extracted/usr/share/arp-scan/." "$bundle_root/share/netkit/arp-scan/"
+    cp -a "$extracted/usr/share/doc/arp-scan/copyright" "$bundle_root/share/netkit/arp-scan/"
+}
+
+_bundle_ip() {
+    local extracted
+    extracted="$(_extract_deb iproute2 6.15.0-1)"
+    install -m 755 "$extracted/usr/bin/ip" "$bundle_root/libexec/netkit/bin/ip"
+    install -m 644 "$extracted/usr/share/doc/iproute2/copyright" "$bundle_root/share/netkit/iproute2-copyright"
+}
+
+_audit_dependencies() {
+    local locks="$bundle_root/share/netkit/locks"
+    mkdir -p "$locks"
+    cp Cargo.lock "$locks/netkit.lock"
+    local archive name
+    for archive in "$bundle_root"/share/netkit/sources/*.crate; do
+        name="$(basename "$archive" .crate)"
+        tar -xOf "$archive" "$name/Cargo.lock" > "$locks/$name.lock"
+    done
+    cargo tree --locked --prefix none --format '{p} {l}' > "$bundle_root/share/netkit/rust-dependencies.txt"
+    cargo tree --locked --duplicates > "$bundle_root/share/netkit/duplicate-crates.txt"
+    {
+        cargo --version
+        rustc --version
+        cc --version | head -n 1
+        ld --version | head -n 1
+        dpkg-query -W -f='${Package} ${Version}\n' bash coreutils jq apt dpkg libc6-dev pkgconf dbus-daemon iwd qrencode libqrencode4
+    } > "$bundle_root/share/netkit/build-host.txt"
+}
+
+repository_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$repository_root"
+bundle_root="$repository_root/target/package"
+mkdir -p "$bundle_root/bin" "$bundle_root/share/netkit/sources"
+rm -f -- "$bundle_root/libexec/netkit/bin/nmcli" "$bundle_root/libexec/netkit/bin/nmtui"
+
+while IFS=$'\t' read -r crate version; do
+    _install_crate "$crate" "$version"
+done < <(cargo metadata --no-deps --format-version 1 | jq -r \
+    '.packages[] | select(.name == "netkit") | .metadata.companions | to_entries[] | [.key, .value] | @tsv')
+
+: > "$bundle_root/share/netkit/system-packages.txt"
+_bundle_ip
+_bundle_arp_scan
+
+cargo build --release --locked
+install -m 755 target/release/netkit "$bundle_root/bin/netkit"
+install -m 644 README.md "$bundle_root/share/netkit/README.md"
+cp Cargo.lock "$bundle_root/share/netkit/Cargo.lock"
+_audit_dependencies
+tooling/verify-bundle "$bundle_root"
+ln -sfn package/libexec target/libexec
+printf 'Bundle ready: %s\n' "$bundle_root/bin/netkit"

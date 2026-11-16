@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+_record_libraries() {
+    local executable="$1" dependencies
+    dependencies="$(ldd "$executable")"
+    if [[ "$dependencies" == *'not found'* ]]; then
+        printf 'Missing native library: %s\n%s\n' "$executable" "$dependencies" >&2
+        exit 1
+    fi
+    printf '%s\n%s\n' "$executable" "$dependencies" >> "$manifest"
+    local library owner
+    while read -r library; do
+        owner="$(dpkg-query -S "$library" 2>/dev/null | awk -F ': /' 'NF == 2 && $1 !~ /^diversion / {print $1; exit}')" || owner=''
+        if [[ -n "$owner" ]]; then
+            owner="$(dpkg-query -W -f='${Package} ${Version}' "$owner")"
+        else
+            owner='unowned by dpkg'
+        fi
+        printf '%s %s\n' "$library" "$owner" >> "$ownership"
+    done < <(awk '/=> \// {print $3} /^[[:space:]]*\// {print $1}' <<< "$dependencies")
+}
+
+bundle_root="$(realpath "${1:-target/package}")"
+manifest="$bundle_root/share/netkit/native-libraries.txt"
+ownership="$bundle_root/share/netkit/native-packages.txt"
+: > "$manifest"
+: > "$ownership"
+for executable in "$bundle_root/bin/netkit" "$bundle_root"/libexec/netkit/bin/*; do
+    _record_libraries "$executable"
+done
+for executable in impala qrencode; do
+    if command -v "$executable" >/dev/null; then
+        _record_libraries "$(command -v "$executable")"
+    fi
+done
+if [[ -f /usr/libexec/iwd ]]; then
+    _record_libraries /usr/libexec/iwd
+fi
+sort -u -o "$ownership" "$ownership"
+for obsolete in nmcli nmtui; do
+    test ! -e "$bundle_root/libexec/netkit/bin/$obsolete"
+done
+"$bundle_root/bin/netkit" --help >/dev/null
+"$bundle_root/bin/netkit" trace -- --help >/dev/null
+"$bundle_root/libexec/netkit/bin/gping" --version >/dev/null
+"$bundle_root/libexec/netkit/bin/cloudflare-speed-cli" --version >/dev/null
+"$bundle_root/libexec/netkit/bin/bandwhich" --version >/dev/null
+"$bundle_root/bin/netkit" status >/dev/null
+"$bundle_root/bin/netkit" routes >/dev/null
+printf 'Bundle verified: %s\n' "$bundle_root"

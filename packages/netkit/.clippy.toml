@@ -1,0 +1,10 @@
+msrv = "1.95.0"
+cognitive-complexity-threshold = 10
+too-many-arguments-threshold = 2
+type-complexity-threshold = 160
+enum-variant-size-threshold = 128
+
+disallowed-methods = [
+    { path = "std::env::var", reason = "Use a config provider instead" },
+    { path = "std::process::exit", reason = "Propagate errors via Result" },
+]

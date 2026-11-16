@@ -1,0 +1,62 @@
+[package]
+name = "netkit"
+version = "1.0.0"
+edition = "2024"
+rust-version = "1.95"
+description = "Networking CLI"
+readme = "README.md"
+license-file = "LICENSE"
+publish = false
+keywords = ["network", "wifi", "dns", "diagnostics", "cli"]
+categories = ["command-line-utilities", "network-programming"]
+
+
+[dependencies]
+clap = { version = "4.6.7", features = ["derive"] }
+anyhow = "1.0.104"
+hickory-resolver = "0.26.3"
+tokio = { version = "1.54.1", features = ["rt", "net", "time"] }
+trippy-tui = "0.13.0"
+zbus = { version = "6.3.0", default-features = false, features = ["default-rt", "proxy"] }
+rust-ini = { version = "0.21.3", default-features = false }
+
+[package.metadata.wifi]
+impala = "0.8.1"
+
+[package.metadata.companions]
+bandwhich = "0.23.1"
+cloudflare-speed-cli = "1.0.12"
+gping = "1.21.0"
+
+[dev-dependencies]
+zbus = { version = "6.3.0", default-features = false, features = ["object-manager"] }
+zruntime = { version = "0.2.3", features = ["runtime", "helper", "process"] }
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+all = { level = "deny", priority = -1 }
+pedantic = { level = "deny", priority = -1 }
+nursery = { level = "deny", priority = -1 }
+cargo = { level = "deny", priority = -1 }
+
+dbg_macro = "warn"
+print_stdout = "warn"
+todo = "deny"
+
+missing_docs_in_private_items = "allow"
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+multiple_crate_versions = "allow"
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+indexing_slicing = "deny"
+float_cmp = "deny"
+float_cmp_const = "deny"
+cast_lossless = "deny"
+arithmetic_side_effects = "warn"
+# Private names intentionally use underscores throughout this project.
+used_underscore_binding = "allow"
+used_underscore_items = "allow"

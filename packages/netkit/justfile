@@ -1,0 +1,59 @@
+set shell := ["bash", "-euo", "pipefail", "-c"]
+
+export RUST_BACKTRACE := "1"
+
+alias c := clean
+alias f := format
+alias fc := format-check
+alias l := clippy
+alias b := build
+alias t := test
+alias r := run
+
+prefix := env("PREFIX", env("HOME") / ".local")
+
+default:
+    @just --list
+
+build:
+    cargo build --release --all-features --locked
+
+clean:
+    cargo clean
+
+format:
+    cargo fmt --all
+
+format-check:
+    cargo fmt --all -- --check
+
+clippy:
+    cargo clippy --all-targets --all-features --locked -- -D warnings
+
+test:
+    cargo test --all-features --workspace --locked
+
+run:
+    cargo run --locked
+
+setup:
+    tooling/setup
+
+check: format-check clippy test
+
+bundle:
+    tooling/bundle
+
+verify-bundle directory="target/package":
+    tooling/verify-bundle '{{directory}}'
+
+install: setup bundle
+    install -d '{{prefix}}/bin' '{{prefix}}/libexec' '{{prefix}}/share'
+    cp -a target/package/libexec/netkit '{{prefix}}/libexec/'
+    cp -a target/package/share/netkit '{{prefix}}/share/'
+    rm -f -- '{{prefix}}/libexec/netkit/bin/nmcli' '{{prefix}}/libexec/netkit/bin/nmtui'
+    install -m 755 target/package/bin/netkit '{{prefix}}/bin/netkit'
+
+uninstall:
+    rm -f -- '{{prefix}}/bin/netkit'
+    rm -rf -- '{{prefix}}/libexec/netkit' '{{prefix}}/share/netkit'

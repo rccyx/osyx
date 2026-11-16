@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repository_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$repository_root"
+
+if ! command -v iwctl >/dev/null || ! command -v qrencode >/dev/null; then
+    if ! command -v apt-get >/dev/null; then
+        printf 'Install iwd and qrencode with your package manager, then run just setup again.\n' >&2
+        exit 1
+    fi
+    sudo apt-get install --no-install-recommends iwd qrencode
+fi
+
+if ! command -v impala >/dev/null; then
+    version="$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[] | select(.name == "netkit") | .metadata.wifi.impala')"
+    cargo install impala --version "=$version" --locked
+fi
+printf 'Wi-Fi tools ready. See README.md for the explicit iwd service migration.\n'
