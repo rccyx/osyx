@@ -3,7 +3,7 @@ app() {
   setopt localoptions err_return no_unset
 
   local browser brave profile target sel key
-  browser=$(command -v google-chrome || command -v chromium || true)
+  browser=$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || true)
   brave=$(command -v brave-browser || command -v brave || true)
   if [[ -z ${browser-} && -z ${brave-} ]]; then
     print -P "%F{red}Neither Chrome nor Brave found%f"
@@ -13,41 +13,41 @@ app() {
   profile=${WEBAPP_PROFILE:-Default}
   typeset -gA WEBAPPS
   WEBAPPS=(
-    gcal       https://calendar.google.com
-    calendar   https://calendar.google.com
-    chatgpt    https://chatgpt.com
-    cc         https://chatgpt.com
-    claude     https://claude.ai
-    ld         https://claude.ai
-    x          https://x.com
-    twitter    https://x.com
-    mail       https://www.icloud.com/mail
-    photos     https://www.icloud.com/photos
-    notes      https://www.icloud.com/notes
+    gcal        https://calendar.google.com
+    calendar    https://calendar.google.com
+    chatgpt     https://chatgpt.com
+    cc          https://chatgpt.com
+    claude      https://claude.ai
+    ld          https://claude.ai
+    x           https://x.com
+    twitter     https://x.com
+    mail        https://www.icloud.com/mail
+    photos      https://www.icloud.com/photos
+    notes       https://www.icloud.com/notes
     soundcloud https://soundcloud.com
-    sc         https://soundcloud.com
-    facebook   https://facebook.com
-    fb         https://facebook.com
-    fbads      "https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=US&media_type=all"
-    ads        "https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=US&media_type=all"
-    instagram  https://instagram.com
-    ig         https://instagram.com
-    grok       https://grok.com
-    github     https://github.com/rccyx
-    gh         https://github.com/rccyx
-    whatsapp   https://web.whatsapp.com
-    wh         https://web.whatsapp.com
-    telegram   https://web.telegram.org
-    tg         https://web.telegram.org
-    discord    https://discord.com/app
-    dc         https://discord.com/app
-    maps       https://maps.google.com
-    translate  https://translate.google.com
-    tr         https://translate.google.com
-    gemini     https://gemini.google.com
-    gm         https://gemini.google.com
-    youtube    https://youtube.com
-    yt         https://youtube.com
+    sc          https://soundcloud.com
+    facebook    https://facebook.com
+    fb          https://facebook.com
+    fbads       "https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=US&media_type=all"
+    ads         "https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=US&media_type=all"
+    instagram   https://instagram.com
+    ig          https://instagram.com
+    grok        https://grok.com
+    github      https://github.com/rccyx
+    gh          https://github.com/rccyx
+    whatsapp    https://web.whatsapp.com
+    wh          https://web.whatsapp.com
+    telegram    https://web.telegram.org
+    tg          https://web.telegram.org
+    discord     https://discord.com/app
+    dc          https://discord.com/app
+    maps        https://maps.google.com
+    translate   https://translate.google.com
+    tr          https://translate.google.com
+    gemini      https://gemini.google.com
+    gm          https://gemini.google.com
+    youtube     https://youtube.com
+    yt          https://youtube.com
   )
 
   if [[ -n ${1-} ]]; then
@@ -75,8 +75,14 @@ app() {
     return 1
   fi
 
-  if [[ ${target} == https://web.telegram.org* || ${target} == https://www.icloud.com* ]]; then
-    profile="Profile 2"
+  if [[ -z ${WEBAPP_PROFILE-} ]]; then
+    if [[ ${target} == https://chatgpt.com* ]]; then
+      profile="Profile 4"
+    elif [[ ${target} == https://gemini.google.com* ]]; then
+      profile="Profile 3"
+    elif [[ ${target} == https://web.telegram.org* || ${target} == https://www.icloud.com* ]]; then
+      profile="Profile 2"
+    fi
   fi
 
   local cmd
@@ -92,3 +98,4 @@ app() {
     nohup "$cmd" --profile-directory="$profile" --app="$target" --new-window >/dev/null 2>&1 &
   fi
 }
+
