@@ -1,4 +1,4 @@
-name: syncer
+name: totpyx
 
 on:
   workflow_dispatch:
@@ -7,24 +7,28 @@ on:
 permissions:
   contents: read
 
+defaults:
+  run:
+    working-directory: packages/totpyx
+
 jobs:
   format:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: ./.github/actions/totpyx/format
+      - uses: ./actions/format
 
   lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: ./.github/actions/totpyx/lint
+      - uses: ./actions/lint
 
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: ./.github/actions/totpyx/test
+      - uses: ./actions/test
 
   build:
     strategy:
@@ -34,7 +38,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
-      - uses: ./.github/actions/totpyx/build
+      - uses: ./actions/build
 
   release:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -43,6 +47,6 @@ jobs:
     environment: release
     steps:
       - uses: actions/checkout@v7
-      - uses: ./.github/actions/totpyx/release
+      - uses: ./actions/release
         with:
           token: ${{ secrets.CRATES_TOKEN_TOTPYX }}
