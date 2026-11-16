@@ -44,3 +44,22 @@ source "$HOME/flavors/themes.zsh"
 
 # cashout potential
 ulimit -c 0
+
+
+# >>> osyx:pnpm >>>
+export PNPM_HOME="$HOME/.local/share/pnpm"
+
+typeset -U PATH path
+
+path=(
+  "$PNPM_HOME/bin"
+  "$PNPM_HOME"
+  $path
+)
+
+export PATH
+# <<< osyx:pnpm <<<
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion

@@ -4,9 +4,12 @@
 # ───────────────────────────────
 
 # ─── Completion ───
-autoload -Uz compinit
 zmodload zsh/complist
-compinit -d "$HOME/.cache/zcompdump"
+if (( ! $+functions[compdef] )); then
+  autoload -Uz compinit
+  mkdir -p "${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
+  compinit -d "${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump"
+fi
 
 zstyle ':completion:*' menu select
 zstyle ':completion:*' auto-description 'specify: %d'

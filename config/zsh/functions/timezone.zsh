@@ -1,0 +1,9 @@
+timezone() {
+  emulate -L zsh
+  setopt localoptions errreturn pipefail
+
+  local timezone
+  timezone="$(timedatectl list-timezones | fzf --height 20 --header "Set timezone" --border)" || return 1
+  sudo timedatectl set-timezone "$timezone"
+  echo "Timezone is set to $timezone"
+}

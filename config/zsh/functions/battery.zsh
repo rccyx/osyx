@@ -1,0 +1,121 @@
+battery() {
+  emulate -L zsh
+  setopt localoptions errreturn pipefail
+
+  local battery_path ac_online supply type capacity battery_status level_color
+  local full design health bar_width filled i
+
+  local -r RESET='\033[0m'
+  local -r RED='\033[31m'
+  local -r YELLOW='\033[33m'
+  local -r ORANGE='\033[38;5;208m'
+  local -r GREEN='\033[32m'
+  local -r MAGENTA='\033[35m'
+
+  battery_path=""
+  ac_online=0
+
+  for supply in /sys/class/power_supply/*(N); do
+    [[ -e "$supply" ]] || continue
+    [[ -r "$supply/type" ]] || continue
+
+    type="$(<"$supply/type")"
+
+    if [[ "$type" == "Battery" && -z "$battery_path" ]]; then
+      battery_path="$supply"
+    elif [[ "$type" == "Mains" || "$type" == "USB" || "$type" == "USB_C" ]]; then
+      if [[ -r "$supply/online" ]] && [[ "$(<"$supply/online")" == "1" ]]; then
+        ac_online=1
+      fi
+    fi
+  done
+
+  if [[ -z "$battery_path" ]]; then
+    printf "${RED}No battery found in /sys/class/power_supply${RESET}\n" >&2
+    return 1
+  fi
+
+  if [[ ! -r "$battery_path/capacity" ]]; then
+    printf "${RED}Battery capacity is unavailable${RESET}\n" >&2
+    return 1
+  fi
+
+  capacity="$(<"$battery_path/capacity")"
+  battery_status="Unknown"
+
+  if [[ -r "$battery_path/status" ]]; then
+    battery_status="$(<"$battery_path/status")"
+  fi
+
+  if (( capacity < 20 )); then
+    level_color="$RED"
+  elif (( capacity < 30 )); then
+    level_color="$YELLOW"
+  elif (( capacity < 40 )); then
+    level_color="$ORANGE"
+  else
+    level_color="$GREEN"
+  fi
+
+  full=""
+  design=""
+
+  if [[ -r "$battery_path/energy_full" ]]; then
+    full="$(<"$battery_path/energy_full")"
+  elif [[ -r "$battery_path/charge_full" ]]; then
+    full="$(<"$battery_path/charge_full")"
+  fi
+
+  if [[ -r "$battery_path/energy_full_design" ]]; then
+    design="$(<"$battery_path/energy_full_design")"
+  elif [[ -r "$battery_path/charge_full_design" ]]; then
+    design="$(<"$battery_path/charge_full_design")"
+  fi
+
+  health=""
+
+  if [[ "$full" =~ ^[0-9]+$ ]] &&
+     [[ "$design" =~ ^[0-9]+$ ]] &&
+     (( design > 0 )); then
+    health=$((full * 100 / design))
+    (( health > 100 )) && health=100
+  fi
+
+  bar_width=20
+  filled=$((capacity * bar_width / 100))
+
+  printf "─── ${MAGENTA}🔋 POWER REPORT${RESET} ─────────────────────────\n"
+
+  if (( ac_online == 1 )); then
+    printf "Source:    ${GREEN}AC Adapter Connected${RESET}\n"
+  else
+    printf "Source:    ${YELLOW}Battery${RESET}\n"
+  fi
+
+  printf "Status:    %s\n" "$battery_status"
+
+  printf "Level:     ${level_color}%s%% ${RESET}[" "$capacity"
+
+  for ((i = 1; i <= bar_width; i++)); do
+    if (( i <= filled )); then
+      printf "■"
+    else
+      printf " "
+    fi
+  done
+
+  printf "]\n"
+  printf "Health:    "
+
+  if [[ -z "$health" ]]; then
+    printf "Unknown\n"
+  elif (( health >= 80 )); then
+    printf "${GREEN}%s%% (Excellent)${RESET}\n" "$health"
+  elif (( health >= 50 )); then
+    printf "${YELLOW}%s%% (Degraded)${RESET}\n" "$health"
+  else
+    printf "${RED}%s%% (Poor)${RESET}\n" "$health"
+  fi
+
+  printf "──────────────────────────────────────────\n"
+}

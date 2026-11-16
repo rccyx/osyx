@@ -22,7 +22,6 @@ typeset -U PATH path
 
 path=(
   $HOME/.local/bin
-  $HOME/bin
 )
 
 path+=(
@@ -47,6 +46,20 @@ path+=(
 
 export PATH
 
+# >>> osyx:pnpm >>>
+export PNPM_HOME="$HOME/.local/share/pnpm"
+
+typeset -U PATH path
+
+path=(
+  "$PNPM_HOME/bin"
+  "$PNPM_HOME"
+  $path
+)
+
+export PATH
+# <<< osyx:pnpm <<<
+
 # Make system themes/fonts visible to Nix apps
 export XDG_DATA_DIRS="${XDG_DATA_DIRS:-/usr/local/share:/usr/share}:$HOME/.nix-profile/share"
 export NIXPKGS_ALLOW_UNFREE=1
@@ -63,6 +76,7 @@ export EDITOR="nvim"
 if [[ -n "$SSH_CONNECTION" ]]; then
   export PINENTRY_USER_DATA='USE_CURSES=1'
 fi
+
 
 # GPG pinentry on current tty
 export GPG_TTY="$(tty 2>/dev/null || echo /dev/pts/0)"
@@ -83,7 +97,6 @@ if [[ -z "$_ZSH_ENV_LOADED" ]]; then
   # NVM & Node
   export NVM_DIR="$HOME/.nvm"
   [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-  [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
 
   # bun
   export BUN_INSTALL="$HOME/.bun"
