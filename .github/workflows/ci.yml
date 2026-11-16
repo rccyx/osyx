@@ -64,7 +64,19 @@ jobs:
     if: needs.totpyx-changes.outputs.changed == 'true'
     uses: ./.github/workflows/on-workflow-call-totpyx.yml
 
-  
+
+  zsh-changes:
+    uses: ./.github/workflows/on-workflow-call-changes.yml
+    with:
+      directory: config/
+      ignore_docs: true
+
+  zsh:
+    needs: syncer-changes
+    if: needs.zsh-changes.outputs.changed == 'true'
+    uses: ./.github/workflows/on-workflow-call-zsh.yml
+
+    
   lint:
     needs: [secrets, changes]
     if: needs.changes.outputs.changed == 'true'

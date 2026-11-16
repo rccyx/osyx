@@ -1,0 +1,85 @@
+name: zsh
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: config/
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install zsh
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y zsh
+          zsh --version
+
+      - name: Parse-only scan + entrypoint load test
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mapfile -d '' FILES < <(
+            find . \
+              -type f \
+              \( -name '*.zsh' -o -name '.zshrc' -o -name '.zshenv' -o -name '.zprofile' -o -name '.zlogin' -o -name '.zlogout' \) \
+              -not -path './.git/*' \
+              -print0 | sort -z
+          )
+
+          if [[ ${#FILES[@]} -eq 0 ]]; then
+            echo "::warning::No zsh files found"
+            exit 0
+          fi
+
+          fail=0
+          echo "==> Zsh parse-only scan (-n)"
+          for f in "${FILES[@]}"; do
+            if ! zsh -n "$f" 2>"$RUNNER_TEMP/zsherr.txt"; then
+              echo "::error file=$f::zsh parse failed"
+              sed -n '1,120p' "$RUNNER_TEMP/zsherr.txt" || true
+              fail=1
+            fi
+          done
+
+          echo "==> Entrypoint load test (source twice, sandbox HOME; mount repo as \$HOME/jarvis)"
+          entrypoint="./entrypoint.zsh"
+          if [[ -f "$entrypoint" ]]; then
+            tmp="$(mktemp -d)"
+            trap 'rm -rf "$tmp"' EXIT
+
+            export HOME="$tmp/home"
+            export XDG_CACHE_HOME="$tmp/cache"
+            export ZDOTDIR="$HOME"
+            export ZSF_CI=1
+
+            mkdir -p "$HOME" "$XDG_CACHE_HOME/zsh"
+
+            ln -s "$GITHUB_WORKSPACE" "$HOME/jarvis"
+
+            if ! zsh -fc '
+              emulate -L zsh
+              setopt ERR_RETURN
+              source "$HOME/jarvis/entrypoint.zsh"
+              source "$HOME/jarvis/entrypoint.zsh"
+            ' 2>"$RUNNER_TEMP/zshloaderr.txt"; then
+              echo "::error file=entrypoint.zsh::entrypoint load test failed"
+              sed -n '1,160p' "$RUNNER_TEMP/zshloaderr.txt" || true
+              fail=1
+            fi
+          else
+            echo "::warning::entrypoint.zsh not found, skipping load test"
+          fi
+
+          exit "$fail"

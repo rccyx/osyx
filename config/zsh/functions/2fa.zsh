@@ -44,6 +44,15 @@ tfa.change(){
   _tfa_store_secret "$name" --force
 }
 
+tfa.remove(){
+  emulate -L zsh
+  _tfa_ready || return $?
+  local name
+  name="$(_tfa_pick)" || return $?
+  _tfa_pass rm "$name" || return $?
+  _tfa_sync
+}
+
 tfa.use(){
   emulate -L zsh
   _tfa_ready || return $?
@@ -66,9 +75,9 @@ tfa(){
   [[ -f "$TFA_STORE_DIR/.gpg-id" ]] || tfa.init || return $?
   _tfa_require fzf || return $?
   local action
-  action="$(printf '%s\n' use add list change | fzf --height=40% --prompt='tfa > ')" || return $?
+  action="$(printf '%s\n' use add list change remove | fzf --height=40% --prompt='tfa > ')" || return $?
   case "$action" in
-    use|add|list|change) "tfa.$action" ;;
+    use|add|list|change|remove) "tfa.$action" ;;
     *) return 1 ;;
   esac
 }
@@ -124,7 +133,13 @@ _tfa_store_secret(){
   [[ -n "$secret" ]] || { _tfa_error "empty secret"; return 1; }
   _tfa_code "$secret" >/dev/null || return $?
   print -r -- "$secret" | _tfa_pass insert --multiline ${2:+$2} "$1" >/dev/null || return $?
+  _tfa_sync || return $?
   print -r -- "saved $1 (encrypted)"
+}
+
+_tfa_sync(){
+  command git -C "$TFA_STORE_DIR" rev-parse --git-dir >/dev/null 2>&1 || return 0
+  command git -C "$TFA_STORE_DIR" push
 }
 
 _tfa_code(){
