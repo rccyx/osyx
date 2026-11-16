@@ -1,33 +1,10 @@
 # Starting
 
-So you're probably wondering can I use this? Or, how do I make my setup look like that?
+There is no desktop environment. You boot in, Hyprland starts, and Hyprland is empty. No panels, no app launchers, no system tray.
 
-You can use pieces of it today.
-
-BUT: The full public one command install is not available yet, so the way to approach this is component extraction.
-
-## What you're looking at
-
-There is no desktop environment. You boot in, Hyprland starts, and Hyprland is empty. No panels, no app launchers, no system tray. Just a tiling window manager. The desktop is whatever you launch into it.
-
-What makes it look the way it does in the demos is entirely these programs working together.
-
-1. [Fonts](./ui/fonts.md)
-2. [Flavors](./ui/flavors.md)
-3. [Zsh](./ui/zsh.md)
-4. [Starship](./ui/starship.md)
-5. [Tmux](./ui/tmux.md)
-6. [Dircolors](./ui/dircolors.md)
-7. [Hyprland](./ui/hypr.md)
-8. [Mako](./ui/mako.md)
-9. [Wofi](./ui/wofi.md)
-10. [Neovim](./ui/nvim.md)
-
-You may have seen me switch themes instantly, to get that, check the [flavors](./ui/flavors.md) docs.
+You get the WM and things happen.
 
 ## The rule
-
-This repo mirrors my real working setup, but the public repo only exposes the parts that are safe enough to share.
 
 The convention is:
 
@@ -39,7 +16,9 @@ generated files   output layer
 
 Normal files are meant to be copied directly.
 
-Underscore files are real workflow files, but they may contain my monitor names, my weird keyboard layout, app paths, startup layout, local binaries, generated paths, hardware assumptions, or personal keybinds, etc.
+Underscore files are real workflow files, but they may weird keyboard layout, app paths, startup layout, apps, local binaries, etc.
+
+So change it to yours.
 
 Example from Hyprland:
 
@@ -54,7 +33,7 @@ _clipboard.conf    generated / machine-local
 
 The root `config/` folder maps directly to `~`. So `config/.config` is `~/.config/` and shell dotfiles like `config/.zshrc` map to `~/.zshrc`.
 
-Some surfaces:
+For example:
 
 ```text
 config/zsh/                shell modules
@@ -124,13 +103,15 @@ Tmux is the persistent terminal workspace.
 
 The status bars on the bottom of the terminal are tmux windows.
 
+Tmux usually looks ugly. Well, I spent some time here to make it look modern.
+
 ### 6. Dircolors
 
 [dircolors.md](./ui/dircolors.md)
 
 Dircolors controls file colors through `LS_COLORS`.
 
-It keeps terminal listings visually aligned with the active palette.
+It keeps terminal listings visually aligned with the active palette. Instead of having that greenish 80s look.
 
 ### 7. Hyprland
 
@@ -143,7 +124,7 @@ Read [hypr.md](./ui/hypr.md)
 
 Mako is notifications.
 
-Wofi is launcher and picker surface.
+Wofi is launcher and picker surface. Only used for the clipboard for now, will change it will my own app when I have time.
 
 ### 9. Neovim
 
@@ -163,3 +144,35 @@ assets/        screenshots and gifs
 .github/       CI and repo checks
 docs/          documentation
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1. [Fonts](./ui/fonts.md)
+2. [Flavors](./ui/flavors.md)
+3. [Zsh](./ui/zsh.md)
+4. [Starship](./ui/starship.md)
+5. [Tmux](./ui/tmux.md)
+6. [Dircolors](./ui/dircolors.md)
+7. [Hyprland](./ui/hypr.md)
+8. [Mako](./ui/mako.md)
+9. [Wofi](./ui/wofi.md)
+10. [Neovim](./ui/nvim.md)
+
+You may have seen me switch themes instantly, to get that, check the [flavors](./ui/flavors.md) docs.
