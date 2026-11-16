@@ -1,12 +1,29 @@
 #!/usr/bin/env zsh
-# screenrecord.zsh — wl-screenrec wrapper for Hyprland
-# Source this file in your ~/.zshrc
 
 rec() {
-  # ====================================================================
-  # NOTIFICATION & BRANDING SETTINGS
-  # Edit these to rename your setup or tweak the notification messages
-  # ====================================================================
+  if [[ "$1" == "help" || "$1" == "-h" || "$1" == "--help" ]]; then
+    cat <<'EOF'
+Usage: rec [region] [options]
+
+Commands & Arguments:
+  (no args)        Toggle recording on the currently focused monitor
+  region           Select a specific screen area to record using slurp
+  help, -h, --help Show this help message
+
+Options:
+  --mic            Record microphone audio (select source via fzf)
+  --desktop        Record desktop/system audio (select sink via fzf)
+  --no-cursor      Hide the mouse cursor in the recording
+  --res=<WxH>      Set encoding resolution (e.g., --res=1920x1080)
+  --output=<name>  Specify a monitor output name (e.g., --output=DP-1)
+
+Notes:
+  - Running 'rec' while a recording is active stops and saves it.
+  - Recordings are saved to ~/recordings/ and file paths are copied to clipboard.
+EOF
+    return 0
+  fi
+
   local APP_NAME="jarvis"
   local TITLE_START="screen - recording..."
   local TITLE_SAVED="Recording saved"
@@ -17,7 +34,6 @@ rec() {
   local TEXT_PLUS_ALL_AUDIO=" + all audio"
   local TEXT_PLUS_DESKTOP=" + desktop audio"
   local TEXT_PLUS_MIC=" + mic"
-  # ====================================================================
 
   local state_base="${XDG_RUNTIME_DIR:-/tmp}/screenrec-${UID}"
   mkdir -p "$state_base"
@@ -26,7 +42,6 @@ rec() {
   local pid_file="${state_base}/rec.pid"
   local path_file="${state_base}/rec.path"
 
-  # ── 1. ATOMIC LOCK ──────────────────────────────────────────────────
   if ! mkdir "$lock_dir" 2>/dev/null; then
     local holder
     holder=$(cat "${lock_dir}/owner" 2>/dev/null || true)
@@ -39,7 +54,6 @@ rec() {
   echo "$$" > "${lock_dir}/owner"
 
   {
-    # ── 2. STOP RECORDING ─────────────────────────────────────────────
     local active_pid
     active_pid=$(cat "$pid_file" 2>/dev/null || true)
 
@@ -62,7 +76,6 @@ rec() {
 
       rm -f "$pid_file" "$path_file"
 
-      # Clean up all virtual mixer loops
       for mod_file in $(find "$state_base" -maxdepth 1 -name "pa_mod_*.id" 2>/dev/null); do
         pactl unload-module "$(cat "$mod_file")" 2>/dev/null || true
         rm -f "$mod_file"
@@ -84,12 +97,10 @@ rec() {
         ) &!
       fi
       
-      # Clear the screen so 'rec' doesn't stay on the terminal
       clear
       return 0
     fi
 
-    # ── 3. START RECORDING ────────────────────────────────────────────
     local mic=false desktop=false no_cursor=false region=false
     local resolution="" output=""
 
@@ -120,7 +131,6 @@ rec() {
       args+=(-o "$output")
     fi
 
-    # ── 4. AUDIO SELECTION (fzf) ──────────────────────────────────────
     local d_src=""
     local m_src=""
 
@@ -143,7 +153,6 @@ rec() {
       fi
     fi
 
-    # ── 5. AUDIO MIXING & DOWNMIXING ──────────────────────────────────
     if [[ "$desktop" == true || "$mic" == true ]]; then
       args+=(--audio)
       
@@ -167,7 +176,6 @@ rec() {
     [[ "$no_cursor" == true ]] && args+=(--no-cursor)
     [[ -n "$resolution" ]]     && args+=(--encode-resolution "$resolution")
 
-    # ── 6. LAUNCH ─────────────────────────────────────────────────────
     wl-screenrec "${args[@]}" >/dev/null 2>&1 &!
     local pid=$!
 
@@ -184,7 +192,6 @@ rec() {
     echo "$pid" > "$pid_file"
     echo "$fname" > "$path_file"
 
-    # Assemble notification target string based on variables
     local target_msg="$TEXT_SCREEN"
     [[ "$region" == true ]] && target_msg="$TEXT_REGION"
 
@@ -198,11 +205,9 @@ rec() {
 
     notify-send -a "$APP_NAME" "$TITLE_START" "$target_msg" -u normal -t 2000 2>/dev/null
     
-    # Clear the screen so 'rec' doesn't stay on the terminal
     clear
 
   } always {
-    # ── 7. RELEASE LOCK ───────────────────────────────────────────────
     rm -rf "$lock_dir"
   }
 }
