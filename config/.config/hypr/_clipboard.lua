@@ -23,8 +23,8 @@ hl.on("hyprland.start", function()
   hl.exec_cmd(environment .. " " .. variables.home .. "/.local/bin/clipvault-watchers")
 end)
 
-hl.bind(variables.mod .. " + x", hl.dsp.exec_cmd("clipvault-wofi"))
+hl.bind(variables.mod .. " + x", hl.dsp.exec_cmd("clipyx"))
 hl.bind(
   variables.mod .. " + SHIFT + x",
-  hl.dsp.exec_cmd(environment .. " " .. variables.home .. "/.local/bin/clipvault-kick")
+  hl.dsp.exec_cmd(environment .. " " .. variables.home .. "/.local/bin/clipyx")
 )

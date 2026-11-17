@@ -59,7 +59,7 @@
 
 This is a bespoke OS layer that attaches to a clean base OS. 
 
-Not dots (although they're included anyway), nor a distro (anything is a distro these days). 
+Not dots (included anyway), nor a distro (anything is a distro these days). 
 
 Starting with bare Debian (Trixie) for now, and extending to others in the future (Arch, etc). 
 
@@ -79,13 +79,16 @@ Recently, I started open-sourcing this whole setup, so I'm dropping projects one
 
 ## Product
 
-I want my computing experience to operate like a HUD, but also look beautiful.
+I want my experience to operate like a HUD, but also look beautiful.
 
 I have an issue with bloated menus, icons everywhere, flashy drop downs, too many built in apps, choice fatigue, etc.
 
-So, everything  here that doesn't need to be there is removed. The system builds itself layer by layer. When it builds, it's lightweight, bloat-free, and completely reproducible and extendable.
+So, everything in here only surfaces when you actually need to see it. Even the top bar is gone.
 
-Even the top bar is gone. Everything only surfaces when you actually need to see it.
+The system builds itself layer by layer. 
+
+When it builds, it's lightweight, bloat-free, and completely reproducible and extendable.
+
 
 ### Zero cognitive pollution
 
