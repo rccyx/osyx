@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+HYPR_BUILDER_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+
+source "$HYPR_BUILDER_ROOT/config.sh"
+source "$HYPR_BUILDER_ROOT/lib/ui.sh"
+source "$HYPR_BUILDER_ROOT/lib/platform.sh"
+source "$HYPR_BUILDER_ROOT/lib/compiler.sh"
+source "$HYPR_BUILDER_ROOT/lib/source.sh"
+source "$HYPR_BUILDER_ROOT/lib/cleanup.sh"
+source "$HYPR_BUILDER_ROOT/lib/build.sh"
+source "$HYPR_BUILDER_ROOT/lib/deps.sh"
+source "$HYPR_BUILDER_ROOT/lib/elf-diagnostics.sh"
+source "$HYPR_BUILDER_ROOT/lib/commands.sh"
+
+command_name="${1:-}"
+shift || true
+
+yes=0
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --yes) yes=1 ;;
+    -h|--help) usage; exit 0 ;;
+    *) die "unknown argument: $1" ;;
+  esac
+  shift
+done
+
+mkdir -p \
+  "$CACHE_DIR" \
+  "$SRC_DIR" \
+  "$BUILD_DIR" \
+  "$STAGE_DIR" \
+  "$STATE_DIR" \
+  "$MANIFEST_DIR"
+
+need_cmd flock
+exec 9>"$STATE_DIR/run.lock"
+flock -n 9 || die "another hypr-builder process is running"
+
+case "$command_name" in
+  plan)
+    plan
+    ;;
+  apply)
+    [ "$yes" -eq 1 ] || die "apply requires --yes"
+    apply
+    ;;
+  doctor)
+    doctor
+    ;;
+  reset)
+    [ "$yes" -eq 1 ] || die "reset requires --yes"
+    reset
+    ;;
+  ""|-h|--help|help)
+    usage
+    ;;
+  *)
+    die "unknown command: $command_name"
+    ;;
+esac
