@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+source "$root/config.sh"
+source "$root/lib/system.sh"
+source "$root/lib/build.sh"
+source "$root/lib/commands.sh"
+
+usage()
+{
+  printf '%s\n' 'usage: ./main plan | apply --yes | doctor | reset --yes'
+}
+
+command_name="${1:-}"
+if [ "$command_name" = "-h" ] || [ "$command_name" = "--help" ] || [ -z "$command_name" ]; then
+  usage
+  exit 0
+fi
+shift
+yes=0
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --yes) yes=1 ;;
+    -h|--help) usage; exit 0 ;;
+    *) fail "unknown argument: $1" ;;
+  esac
+  shift
+done
+
+load_platform
+mkdir -p "$CACHE_DIR"
+
+case "$command_name" in
+  plan) plan ;;
+  apply) [ "$yes" -eq 1 ] || fail "apply requires --yes"; apply ;;
+  doctor) doctor ;;
+  reset) [ "$yes" -eq 1 ] || fail "reset requires --yes"; reset ;;
+  -h|--help|"") usage ;;
+  *) fail "unknown command: $command_name" ;;
+esac
