@@ -39,7 +39,7 @@
   </tr>
   <tr>
     <td><img width="100%" alt="osyx desktop" src="https://github.com/user-attachments/assets/8475976a-f782-4dbe-8fb6-5509e8deb4cc" /></td>
-    <td><img width="100%" alt="osyx desktop" src="https://github.com/user-attachments/assets/e0ad8df6-758b-4f8b-bed9-fd262a7306ce" /></td>
+    <td><img width="100%" alt="osyx desktop" src="https://github.com/user-attachments/assets/2db00115-811c-4391-b6a6-0e3bd839a282" /></td>
   </tr>
 </table>
 
@@ -65,7 +65,7 @@ Starting with bare Debian (Trixie) for now, and extending to others in the futur
 
 Which converts a blank TTY into a hyper optimized and premium looking workstation in minutes.
 
-Everything is built/assembled from scratch (base slate doensn't even include `sudo`), and to make it all cohesive: the login screen, the power menu, the theming, everything, even the Hyprland builder (compiles all hypr programs for Debian) work together in unison.  
+Everything is built/assembled from scratch (base slate doesn't even include `sudo`), and to make it all cohesive: the login screen, the power menu, the theming, everything, even the Hyprland builder (compiles all hypr programs for Debian) work together in unison.  
 
 If a program doesn't fit, I just make a custom made one that fits.
 
@@ -91,7 +91,7 @@ When it builds, it's lightweight, bloat-free, and completely reproducible and ex
 
 ### Zero cognitive pollution
 
-**On-demand metrics:** Vitals surface only when you need to them: Notifications show alerts only when the battery hits 50%, 33%, 25%, 15%, 10%, and 5%. If thermals spike or network drops, the system auti-notifies you.
+**On-demand metrics:** Vitals surface only when you need them: Notifications show alerts only when the battery hits 50%, 33%, 25%, 15%, 10%, and 5%. If thermals spike or network drops, the system auto-notifies you.
 
 Need time or system status? Hit `Alt + M` to invoke the control center or check Starship in your terminal. Otherwise, the desktop is completely empty.
 
@@ -129,11 +129,9 @@ Most tasks are handled through `fzf` autocompletion, as there's only so much one
 
 This includes everything from encryption, 2FA codes, network management, cloud analysis, reminders, syncing packages across Rust, TypeScript, Go, Python, APT, and whatever else, to Git ops, pull request management, reviews, submits, even ISO flashing, video editing, audio routing, and much more.
 
-Slowly releasing this since I need time to decouple from my personal setup.
-
 It covers basically anything that doesn't really require a full blown GUI to use.
 
-Which if you think about it, most thing.
+Which if you think about it, most things.
 
 ### Apps
 
@@ -141,7 +139,7 @@ Apps behave like native apps. For example, `app sc` launches SoundCloud, `app yt
 
 ## Custom Tooling
 
-These are my custom programs (same DS, philosophy, everything):
+These are my custom programs (same design system, philosophy, everything):
 
 | Package | Written | Description |
 | :--- | :--- | :--- |
@@ -185,7 +183,7 @@ The bootstrap process is like this:
 | :--- | :--- | :--- |
 | 0 | Root Bootstrap | Boots a fresh Debian install (bare metal). Sets up network interfaces, core system packages, user privileges, and atomic state directories. |
 | 1 | User Bootstrap | Configures user groups (audio, video, input, etc), installs base display libraries, sets Zsh as default shell, and provisions language runtimes/package managers (rust, node, go, uv, etc). |
-| 2 | Hyprland/Wayland | Invokes hyprtryx to compile the visual desktop so we exit the TTY gulag, Wayland protocols, and dependencies natively for the host CPU architecture. |
+| 2 | Hyprland/Wayland | Invokes hypr-builder to compile the visual desktop so we exit the TTY gulag, Wayland protocols, and dependencies natively for the host CPU architecture. |
 | 3 | Workstation Layer | Provisions custom binaries (asryx, thyx, lookas, powyx, etc), generates global visual themes via flavors, and hooks up event notifications. |
 
 ### Hypr Builders
@@ -196,7 +194,7 @@ You might be asking, how am I on Debian and still got the latest hyprland?
 
 Debian Trixie ships older system libraries and compiler toolchains than upstream Hyprland requires.
 
-Wel, just pin & compile them from scratch.
+Well, just pin & compile them from scratch.
 
 We setup a C++26 compiler, then use it to compile the entire Hypr stack (or only the ones needed).
 
@@ -218,7 +216,7 @@ Totally disposable and reproducible. **No ISO needed.**
 
 Yes. 
 
-Thre's no one command install yet, so the way to go by this right now is component extraction. 
+There's no one command install yet, so the way to go by this right now is component extraction. 
 
 Just grab what you want & wire it into your own setup.
 
@@ -336,7 +334,7 @@ This is the control center. C++23 backend with a QML UI, compiled into a 0.5MB b
 </div>
 
 
-You hit a keybind (i.e `Alt + M`) and it pops up (overlay full screen on Hyprland) instantly: Weather, Wi-Fi, Bluetooth, VPN, focus mode, brightness, volume, CPU, RAM, temps, uptime and every device you're connected to.
+You hit a keybind (e.g. `Alt + M`) and it pops up (overlay full screen on Hyprland) instantly: Weather, Wi-Fi, Bluetooth, VPN, focus mode, brightness, volume, CPU, RAM, temps, uptime and every device you're connected to.
 
 One screen with a glassmorphic UI that works on almost any background.
 
@@ -381,7 +379,7 @@ Just set your GPG fingerprint at the top of the file, source it, and run tfa to 
 
 ### [netkit](/packages/netkit) (Δ)
 
-Unified Linux networking CLI that dispacthes other Linux utilities.
+Unified Linux networking CLI that dispatches other Linux utilities.
 
 Consolidates Wi-Fi management, connected Wi-Fi QR sharing, interface and routing inspection, live bandwidth and per-process traffic monitoring, TCP/UDP socket watching, tcpdump packet header capture, speed and latency diagnostics, DNS queries & local network device discovery into a single CLI.
 
@@ -392,7 +390,7 @@ Not on Cargo. Installed to `~/.local`.
 
 Atomic package and machine-state snapshotter.
 
-Captures installed packages and versions across `APT` (manual packages, sources, keyrings, dpkg selections), `mise`, `Cargo`, `npm`/`pnpm`, `pipx`, `uv` tools, `Go`, `rustup`, and `Nix` (plus inventory-only `pip3`, `Snap`, `Flatpak`, and GNOME media-key bindings) into an atomic `sync.lock.json` file (default `~/packages`), auto-committing and pushing when tracked in Git, and replaying the full environment on another machine. Through simple calls 
+Captures installed packages and versions across `APT` (manual packages, sources, keyrings, dpkg selections), `mise`, `Cargo`, `npm`/`pnpm`, `pipx`, `uv` tools, `Go`, `rustup`, and `Nix` (plus inventory-only `pip3`, `Snap`, `Flatpak`, and GNOME media-key bindings) into an atomic `sync.lock.json` file (default `~/packages`), auto-committing and pushing when tracked in Git, and replaying the full environment on another machine. Through simple calls:
 
 ```sh
 syncer backup
