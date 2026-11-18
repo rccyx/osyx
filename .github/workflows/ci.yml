@@ -34,13 +34,13 @@ jobs:
   powyx-changes:
     uses: ./.github/workflows/on-workflow-call-changes.yml
     with:
+      directory: packages/powyx
       ignore_docs: true
 
   powyx:
     needs: powyx-changes
     if: needs.powyx-changes.outputs.changed == 'true'
     uses: ./.github/workflows/on-workflow-call-powyx.yml
-
 
   syncer-changes:
     uses: ./.github/workflows/on-workflow-call-changes.yml
@@ -64,7 +64,6 @@ jobs:
     if: needs.totpyx-changes.outputs.changed == 'true'
     uses: ./.github/workflows/on-workflow-call-totpyx.yml
 
-
   zsh-changes:
     uses: ./.github/workflows/on-workflow-call-changes.yml
     with:
@@ -76,7 +75,6 @@ jobs:
     if: needs.zsh-changes.outputs.changed == 'true'
     uses: ./.github/workflows/on-workflow-call-zsh.yml
 
-
   hypr-builder-changes:
     uses: ./.github/workflows/on-workflow-call-changes.yml
     with:
@@ -87,7 +85,6 @@ jobs:
     needs: hypr-builder-changes
     if: needs.hypr-builder-changes.outputs.changed == 'true'
     uses: ./.github/workflows/on-workflow-call-hypr-builder.yml
-
 
   lint:
     needs: [secrets, changes]
