@@ -1,0 +1,68 @@
+name: test
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: builders/
+
+jobs:
+  builders:
+    name: build and reset (debian-trixie)
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: build test image
+        run: docker build -t builders-trixie -f ./trixie/Dockerfile .
+
+      - name: lint
+        run: docker run --rm builders-trixie bash /usr/local/lib/builders-tests/lint.sh
+
+      - name: restore completed build stages
+        id: stages
+        uses: actions/cache/restore@v5
+        with:
+          path: ${{ runner.temp }}/builders-stage-cache
+          key: builders-trixie-${{ runner.arch }}-${{ hashFiles('./images/trixie/Dockerfile') }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            builders-trixie-${{ runner.arch }}-${{ hashFiles('./images/trixie/Dockerfile') }}-
+
+      - name: test builders
+        env:
+          STAGE_CACHE: ${{ runner.temp }}/builders-stage-cache
+        run: |
+          mkdir -p "$STAGE_CACHE"
+          sudo chown -R 1000:1000 "$STAGE_CACHE"
+          docker run --rm \
+            --mount "type=bind,source=$STAGE_CACHE,target=/home/builder/.local/share/builders-stage-cache" \
+            builders-trixie 2>&1 | tee builders-trixie.log
+
+      - name: save completed build stages
+        if: ${{ !cancelled() && steps.stages.outcome == 'success' }}
+        uses: actions/cache/save@v5
+        with:
+          path: ${{ runner.temp }}/builders-stage-cache
+          key: ${{ steps.stages.outputs.cache-primary-key }}
+
+      - name: upload test log
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: builders-trixie-log
+          path: builders-trixie.log
+          if-no-files-found: ignore

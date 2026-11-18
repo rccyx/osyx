@@ -26,6 +26,7 @@ jobs:
 
   changes:
     uses: ./.github/workflows/on-workflow-call-changes.yml
+    needs: secrets
     with:
       directory: .
       ignore_docs: true
@@ -76,7 +77,19 @@ jobs:
     if: needs.zsh-changes.outputs.changed == 'true'
     uses: ./.github/workflows/on-workflow-call-zsh.yml
 
-    
+
+  hypr-builder-changes:
+    uses: ./.github/workflows/on-workflow-call-changes.yml
+    with:
+      directory: builders/
+      ignore_docs: true
+
+  hypr-builder:
+    needs: hypr-builder-changes
+    if: needs.hypr-builder-changes.outputs.changed == 'true'
+    uses: ./.github/workflows/on-workflow-call-hypr-builder.yml
+
+
   lint:
     needs: [secrets, changes]
     if: needs.changes.outputs.changed == 'true'
