@@ -10,7 +10,7 @@ permissions:
 defaults:
   run:
     working-directory: config/zsh/functions/
-    
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -47,7 +47,7 @@ jobs:
           echo "==> Zsh parse-only scan (-n)"
           for f in "${FILES[@]}"; do
             if ! zsh -n "$f" 2>"$RUNNER_TEMP/zsherr.txt"; then
-              echo "::error file=$f::zsh parse failed"
+              echo "::error file=config/zsh/functions/${f#./}::zsh parse failed"
               sed -n '1,120p' "$RUNNER_TEMP/zsherr.txt" || true
               fail=1
             fi
@@ -71,10 +71,10 @@ jobs:
             if ! zsh -fc '
               emulate -L zsh
               setopt ERR_RETURN
-              source "$HOME/jarvis/entrypoint.zsh"
-              source "$HOME/jarvis/entrypoint.zsh"
+              source "$HOME/jarvis/config/zsh/functions/entrypoint.zsh"
+              source "$HOME/jarvis/config/zsh/functions/entrypoint.zsh"
             ' 2>"$RUNNER_TEMP/zshloaderr.txt"; then
-              echo "::error file=entrypoint.zsh::entrypoint load test failed"
+              echo "::error file=config/zsh/functions/entrypoint.zsh::entrypoint load test failed"
               sed -n '1,160p' "$RUNNER_TEMP/zshloaderr.txt" || true
               fail=1
             fi
