@@ -1,7 +1,2 @@
--- =============================================================================
--- workspaces.lua — static workspace and monitor rules
---
--- Application startup placement lives in _startup.lua because Hyprland 0.56 can
--- attach workspace rules directly to hl.exec_cmd(). Add static workspace rules
--- here when you introduce a multi-monitor layout.
--- =============================================================================
+-- Workspace rules
+-- Startup app placement is in _startup.lua.

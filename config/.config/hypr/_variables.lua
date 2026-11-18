@@ -1,7 +1,4 @@
--- =============================================================================
--- _variables.lua — personal overrides
--- =============================================================================
-
+-- Personal values
 local variables = __require("variables")
 
 variables.webapp = 'google-chrome --profile-directory="Default" --app='
