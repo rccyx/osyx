@@ -9,8 +9,8 @@ permissions:
 
 defaults:
   run:
-    working-directory: config/
-
+    working-directory: config/zsh/functions/
+    
 jobs:
   lint:
     runs-on: ubuntu-latest

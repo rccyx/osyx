@@ -34,7 +34,6 @@ jobs:
   powyx-changes:
     uses: ./.github/workflows/on-workflow-call-changes.yml
     with:
-      directory: packages/powyx
       ignore_docs: true
 
   powyx:
@@ -61,7 +60,7 @@ jobs:
       ignore_docs: true
 
   totpyx:
-    needs: syncer-changes
+    needs: totpyx-changes
     if: needs.totpyx-changes.outputs.changed == 'true'
     uses: ./.github/workflows/on-workflow-call-totpyx.yml
 
@@ -73,7 +72,7 @@ jobs:
       ignore_docs: true
 
   zsh:
-    needs: syncer-changes
+    needs: zsh-changes
     if: needs.zsh-changes.outputs.changed == 'true'
     uses: ./.github/workflows/on-workflow-call-zsh.yml
 
