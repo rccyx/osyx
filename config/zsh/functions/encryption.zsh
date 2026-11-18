@@ -1,8 +1,8 @@
 # ---------- tiny UI helpers ----------
-_ok(){ print -P "%F{2}✔%f $*"; }
-_note(){ print -P "%F{4}ℹ️ %f $*"; }
-_warn(){ print -P "%F{3}‼%f $*"; }
-_err(){ print -P "%F{1}✖%f $*"; }
+_ok(){ print -Pn "%F{2}✔%f "; print -r -- "$*"; }
+_note(){ print -Pn "%F{4}ℹ️ %f "; print -r -- "$*"; }
+_warn(){ print -Pn "%F{3}‼%f "; print -r -- "$*"; }
+_err(){ print -Pn "%F{1}✖%f "; print -r -- "$*"; }
 _hr(){ print -P "%F{244}${(l:60::-:)}%f"; }
 
 # ---------- deps and env ----------
@@ -34,18 +34,18 @@ _clip(){
 _gpg_list_pub_tsv(){
   gpg --list-keys --with-colons --fingerprint 2>/dev/null \
   | awk -F: '
-    $1=="pub"{algo=$4;len=$3;created=$6;expires=$7;trust=$2}
-    $1=="fpr"{fpr=$10}
-    $1=="uid"{uid=$10; printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", fpr, uid, algo, created, expires, trust, len }
+    $1=="pub"{algo=$4;len=$3;created=$6;expires=$7;trust=$2;fpr=""}
+    $1=="fpr" && fpr==""{fpr=$10}
+    $1=="uid" && fpr!=""{uid=$10; printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", fpr, uid, algo, created, expires, trust, len }
   '
 }
 
 _gpg_list_sec_tsv(){
   gpg --list-secret-keys --with-colons --fingerprint 2>/dev/null \
   | awk -F: '
-    $1=="sec"{algo=$4;len=$3;created=$6;expires=$7;trust=$2}
-    $1=="fpr"{fpr=$10}
-    $1=="uid"{uid=$10; printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", fpr, uid, algo, created, expires, trust, len }
+    $1=="sec"{algo=$4;len=$3;created=$6;expires=$7;trust=$2;fpr=""}
+    $1=="fpr" && fpr==""{fpr=$10}
+    $1=="uid" && fpr!=""{uid=$10; printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", fpr, uid, algo, created, expires, trust, len }
   '
 }
 
@@ -60,6 +60,17 @@ _gpg_pick_pub_multi(){
   | awk -F'\t' '{print $1}'
 }
 
+_gpg_pick_pub_one(){
+  local rows; rows="$(_gpg_list_pub_tsv)"
+  [[ -z "$rows" ]] && { _err "no public keys found"; return 1; }
+  print -r -- "$rows" \
+  | fzf --with-nth=2 --delimiter='\t' --height=70% \
+        --prompt="pick public key ⇢ " \
+        --preview-window=down,8 \
+        --preview 'printf "FPR: %s\nUID: %s\nAlgo: %s Len: %s\nCreated: %s\nExpires: %s\nTrust: %s\n" {1} {2} {3} {7} {4} {5} {6}' \
+  | awk -F'\t' 'NR==1{print $1}'
+}
+
 _gpg_pick_sec_one(){
   local rows; rows="$(_gpg_list_sec_tsv)"
   [[ -z "$rows" ]] && { _err "no secret keys found"; return 1; }
@@ -72,24 +83,25 @@ _gpg_pick_sec_one(){
 }
 
 _gpg_pick_files(){
-  if (( $# > 0 )); then print -r -- "$@"; return 0; fi
+  if (( $# > 0 )); then print -rl -- "$@"; return 0; fi
   if command -v fd >/dev/null 2>&1; then
-    # -H: hidden, -I: ignore .gitignore, -E .git: don't touch the repo guts
-    fd -H -I -E .git -d 1 -t f -t d . | sort | fzf --multi --height=70% --prompt="pick files or dirs ⇢ "
+    fd -H -I -E .git -d 1 -t f -t d . | sed 's|^\./||' | sort | fzf --multi --height=70% --prompt="pick files or dirs ⇢ "
   else
-    find . -maxdepth 1 -mindepth 1 -not -name ".git" -printf "%P\n" | sort | fzf --multi --height=70% --prompt="pick files or dirs ⇢ "
+    find . -maxdepth 1 -mindepth 1 -not -name ".git" | sed 's|^\./||' | sort | fzf --multi --height=70% --prompt="pick files or dirs ⇢ "
   fi
 }
 
 # ---------- small helpers ----------
 _bytes_of(){
   local p="$1"
-  if [[ -d "$p" ]]; then du -sb "$p" 2>/dev/null | awk '{print $1}'
-  else stat --printf="%s" "$p" 2>/dev/null || wc -c <"$p"
+  if [[ ! -e "$p" ]]; then print -r -- 0
+  elif [[ -d "$p" ]]; then du -sb "$p" 2>/dev/null | awk '{print $1}'
+  else stat --printf="%s" "$p" 2>/dev/null || wc -c <"$p" | tr -d ' '
   fi
 }
+
 _hsize(){
-  local b="$1" kib=1024 mib=$((1024*1024)) gib=$((1024*1024*1024)) tib=$((1024*1024*1024*1024))
+  local b="${1:-0}" kib=1024 mib=$((1024*1024)) gib=$((1024*1024*1024)) tib=$((1024*1024*1024*1024))
   if   (( b >= tib )); then printf "%.2f TiB" "$((b*100/tib))e-2"
   elif (( b >= gib )); then printf "%.2f GiB" "$((b*100/gib))e-2"
   elif (( b >= mib )); then printf "%.2f MiB" "$((b*100/mib))e-2"
@@ -97,30 +109,56 @@ _hsize(){
   else printf "%d B" "$b"; fi
 }
 
-# Build --recipient args for an array of fingerprints/emails
+_rm_plain(){
+  local p="$1"
+  if [[ -d "$p" ]]; then rm -rf -- "$p"
+  else shred -u -- "$p" 2>/dev/null || rm -f -- "$p"
+  fi
+}
+
 _gpg_build_recip_args(){
   local -a out=()
   local r
   for r in "$@"; do out+=( --recipient "$r" ); done
-  print -r -- "${(q)out[@]}"
+  print -r -- "${(j: :)${(@q)out}}"
 }
 
 # ---------- actions ----------
-# Encrypt one or more files for selected recipients. Adds .gpg
+# encrypt one or more files in place (replaces plaintext with .gpg).
 gpg.enc(){
   emulate -L zsh; setopt pipefail
   _gpg_check || return 1
 
-  local -a picks; picks=("${(@f)$(_gpg_pick_files "$@")}")
-  (( ${#picks[@]} )) || { _err "nothing selected"; return 1; }
+  local raw_picks; raw_picks="$(_gpg_pick_files "$@")" || true
+  local -a raw_list=(); [[ -n "$raw_picks" ]] && raw_list=("${(@f)raw_picks}")
+  (( ${#raw_list[@]} )) || { _err "nothing selected"; return 1; }
+
+  local -a picks=()
+  local p
+  for p in "${raw_list[@]}"; do
+    [[ -e "$p" ]] || { _err "not found: $p"; return 1; }
+    [[ -d "$p" ]] && { _err "is a directory (use gpg.dir): $p"; return 1; }
+    if [[ "$p" == *.gpg || "$p" == *.asc ]]; then
+      _warn "skip already encrypted: $p"
+      continue
+    fi
+    picks+=( "$p" )
+  done
+  (( ${#picks[@]} )) || { _warn "no unencrypted files to process"; return 0; }
 
   _note "select recipient(s) or Esc for symmetric"
-  local -a rcpts; rcpts=("${(@f)$(_gpg_pick_pub_multi)}")
+  local raw_rcpts; raw_rcpts="$(_gpg_pick_pub_multi)" || true
+  local -a rcpts=(); [[ -n "$raw_rcpts" ]] && rcpts=("${(@f)raw_rcpts}")
   local mode="pub"; (( ${#rcpts[@]} )) || mode="sym"
 
   _hr
-  print -P "%F{244}PLAN: encrypt%f ${#picks[@]} item(s) as ${mode}"
-  local total=0 p; for p in "${picks[@]}"; do local b="$(_bytes_of "$p")"; (( total+=b )); print -P "  ${p}  ($(_hsize "$b"))"; done
+  print -P "%F{244}PLAN: encrypt%f ${#picks[@]} file(s) as ${mode} (removes originals)"
+  local total=0 b
+  for p in "${picks[@]}"; do
+    b="$(_bytes_of "$p")"
+    (( total+=b ))
+    print -Pn "  "; print -r -- "${p}  ($(_hsize "$b"))"
+  done
   print -P "total ~ %F{6}$(_hsize "$total")%f"
   _hr
 
@@ -135,65 +173,119 @@ gpg.enc(){
   for p in "${picks[@]}"; do
     out="${p}.gpg"
     if [[ "$mode" == "sym" ]]; then
-      print -P "%F{244}→%f gpg --symmetric --cipher-algo AES256 -o ${(q)out} ${(q)p}"
-      gpg --symmetric --cipher-algo AES256 -o "$out" "$p" || rc=$?
+      print -Pn "%F{244}→%f "; print -r -- "gpg --symmetric --cipher-algo AES256 -o ${(q)out} ${(q)p}"
+      if gpg --symmetric --cipher-algo AES256 -o "$out" "$p" && [[ -s "$out" ]]; then
+        _rm_plain "$p"
+      else
+        rm -f -- "$out"
+        rc=1
+      fi
     else
-      print -P "%F{244}→%f gpg --yes --encrypt ${(q)recip_args} -o ${(q)out} ${(q)p}"
-      gpg --yes --encrypt "${recip_args[@]}" -o "$out" "$p" || rc=$?
+      print -Pn "%F{244}→%f "; print -r -- "gpg --yes --encrypt ${(j: :)${(@q)recip_args}} -o ${(q)out} ${(q)p}"
+      if gpg --yes --encrypt "${recip_args[@]}" -o "$out" "$p" && [[ -s "$out" ]]; then
+        _rm_plain "$p"
+      else
+        rm -f -- "$out"
+        rc=1
+      fi
     fi
   done
   (( rc == 0 )) && _ok "encrypt complete" || _err "encrypt finished with errors (rc=$rc)"
   return $rc
 }
 
-# Encrypt a directory by tarring then encrypting. Produces .tar.zst.gpg or .tar.gz.gpg
+# archive and encrypt directory in place (replaces directory with .tar.zst.gpg or .tar.gz.gpg).
 gpg.dir(){
   emulate -L zsh; setopt pipefail
   _gpg_check || return 1
 
-  local -a picks; picks=("${(@f)$(_gpg_pick_files "$@")}")
-  (( ${#picks[@]} )) || { _err "nothing selected"; return 1; }
+  local raw_picks; raw_picks="$(_gpg_pick_files "$@")" || true
+  local -a raw_list=(); [[ -n "$raw_picks" ]] && raw_list=("${(@f)raw_picks}")
+  (( ${#raw_list[@]} )) || { _err "nothing selected"; return 1; }
+
+  local -a picks=()
+  local d
+  for d in "${raw_list[@]}"; do
+    [[ -d "$d" ]] || { _warn "skip non-dir: $d"; continue; }
+    picks+=( "${d:A}" )
+  done
+  (( ${#picks[@]} )) || { _err "no directories selected"; return 1; }
 
   _note "select recipient(s) or Esc for symmetric"
-  local -a rcpts; rcpts=("${(@f)$(_gpg_pick_pub_multi)}")
+  local raw_rcpts; raw_rcpts="$(_gpg_pick_pub_multi)" || true
+  local -a rcpts=(); [[ -n "$raw_rcpts" ]] && rcpts=("${(@f)raw_rcpts}")
   local mode="pub"; (( ${#rcpts[@]} )) || mode="sym"
+
+  _hr
+  print -P "%F{244}PLAN: archive + encrypt%f ${#picks[@]} dir(s) as ${mode} (removes originals)"
+  local total=0 b
+  for d in "${picks[@]}"; do
+    b="$(_bytes_of "$d")"
+    (( total+=b ))
+    print -Pn "  "; print -r -- "${d}  ($(_hsize "$b"))"
+  done
+  print -P "total ~ %F{6}$(_hsize "$total")%f"
+  _hr
+
+  local ans; read -r "ans?Proceed [y/N]: "; [[ "$ans" =~ ^[Yy]$ ]] || { _warn "aborted"; return 1; }
 
   local -a recip_args=()
   if [[ "$mode" == "pub" ]]; then
     local r; for r in "${rcpts[@]}"; do recip_args+=( --recipient "$r" ); done
   fi
 
-  local rc=0 d base tmp
-  for d in "${picks[@]}"; do
-    [[ -d "$d" ]] || { _warn "skip non-dir: $d"; continue; }
-    base="${d:t}"
-    if command -v zstd >/dev/null 2>&1; then
-      tmp="${base}.tar.zst"
-      print -P "%F{244}→%f tar -C ${(q)d:h} -cf - ${(q)base} | zstd -q -T0 -19 -o ${(q)tmp}"
-      tar -C "${d:h}" -cf - "${base}" | zstd -q -T0 -19 -o "${tmp}" || { rc=$?; continue; }
-    else
-      tmp="${base}.tar.gz"
-      print -P "%F{244}→%f tar -C ${(q)d:h} -czf ${(q)tmp} ${(q)base}"
-      tar -C "${d:h}" -czf "${tmp}" "${base}" || { rc=$?; continue; }
-    fi
-    if [[ "$mode" == "sym" ]]; then
-      print -P "%F{244}→%f gpg --symmetric --cipher-algo AES256 -o ${(q)tmp}.gpg ${(q)tmp}"
-      gpg --symmetric --cipher-algo AES256 -o "${tmp}.gpg" "${tmp}" || rc=$?
-    else
-      print -P "%F{244}→%f gpg --yes --encrypt ${(q)recip_args} -o ${(q)tmp}.gpg ${(q)tmp}"
-      gpg --yes --encrypt "${recip_args[@]}" -o "${tmp}.gpg" "${tmp}" || rc=$?
-    fi
-    rm -f -- "$tmp"
-    (( rc == 0 )) && _ok "encrypted dir: ${d} -> ${tmp}.gpg"
-  done
+  local stage_dir; stage_dir="$(mktemp -d)" || return 1
+  local rc=0 abs base parent tmp out
+  {
+    for abs in "${picks[@]}"; do
+      parent="${abs:h}"
+      base="${abs:t}"
+      if command -v zstd >/dev/null 2>&1; then
+        out="${parent}/${base}.tar.zst.gpg"
+        tmp="${stage_dir}/${base}.tar.zst"
+        print -Pn "%F{244}→%f "; print -r -- "tar -C ${(q)parent} -cf - ${(q)base} | zstd -q -T0 -19 -o ${(q)tmp}"
+        tar -C "$parent" -cf - "$base" | zstd -q -T0 -19 -o "$tmp" || { rc=$?; continue; }
+      else
+        out="${parent}/${base}.tar.gz.gpg"
+        tmp="${stage_dir}/${base}.tar.gz"
+        print -Pn "%F{244}→%f "; print -r -- "tar -C ${(q)parent} -czf ${(q)tmp} ${(q)base}"
+        tar -C "$parent" -czf "$tmp" "$base" || { rc=$?; continue; }
+      fi
+
+      local enc_ok=0
+      if [[ "$mode" == "sym" ]]; then
+        print -Pn "%F{244}→%f "; print -r -- "gpg --symmetric --cipher-algo AES256 -o ${(q)out} ${(q)tmp}"
+        gpg --symmetric --cipher-algo AES256 -o "$out" "$tmp" && [[ -s "$out" ]] && enc_ok=1
+      else
+        print -Pn "%F{244}→%f "; print -r -- "gpg --yes --encrypt ${(j: :)${(@q)recip_args}} -o ${(q)out} ${(q)tmp}"
+        gpg --yes --encrypt "${recip_args[@]}" -o "$out" "$tmp" && [[ -s "$out" ]] && enc_ok=1
+      fi
+
+      rm -f -- "$tmp"
+      if (( enc_ok )); then
+        if [[ "${PWD:A}" == "$abs" || "${PWD:A}" == "${abs}/"* ]]; then
+          cd -- "$parent" || return 1
+        fi
+        _rm_plain "$abs"
+        _ok "encrypted dir: ${abs} -> ${out}"
+      else
+        rm -f -- "$out"
+        rc=1
+      fi
+    done
+  } always {
+    rm -rf -- "$stage_dir"
+  }
   return $rc
 }
 
-# Decrypt file(s). If output is a tar.* then offer to extract.
+# decrypt file(s) in place (removes .gpg/.asc after decryption, and removes .tar.* if extracted).
 gpg.dec(){
   emulate -L zsh; setopt pipefail
   _gpg_check || return 1
-  local -a picks; picks=("${(@f)$(_gpg_pick_files "$@")}")
+
+  local raw_picks; raw_picks="$(_gpg_pick_files "$@")" || true
+  local -a picks=(); [[ -n "$raw_picks" ]] && picks=("${(@f)raw_picks}")
   (( ${#picks[@]} )) || { _err "nothing selected"; return 1; }
 
   local rc=0 f out
@@ -202,23 +294,57 @@ gpg.dec(){
     if [[ "$f" == *.gpg ]]; then out="${f%.gpg}"
     elif [[ "$f" == *.asc ]]; then out="${f%.asc}"
     fi
-    print -P "%F{244}→%f gpg --use-agent --batch --yes --decrypt -o ${(q)out} ${(q)f}"
-    gpg --use-agent --batch --yes --decrypt -o "$out" "$f" 2>/dev/null || { rc=$?; continue; }
+
+    print -Pn "%F{244}→%f "; print -r -- "gpg --batch --yes --decrypt -o ${(q)out} ${(q)f}"
+    if ! gpg --batch --yes --decrypt -o "$out" "$f" || [[ ! -s "$out" ]]; then
+      rm -f -- "$out"
+      rc=1
+      continue
+    fi
+    _rm_plain "$f"
 
     if [[ "$out" == *.tar.zst || "$out" == *.tar.gz || "$out" == *.tar ]]; then
-      local ans; read -r "ans?Extract ${out} to ./${out:r}/ [y/N]: "
+      local stem="$out"
+      stem="${stem%.zst}"
+      stem="${stem%.gz}"
+      stem="${stem%.tar}"
+      local base_name="${stem:t}"
+      local out_dir="${out:h}"
+      local dest="${out_dir}/${base_name}"
+      local ans; read -r "ans?Extract ${out} to ${dest}/ [y/N]: "
       if [[ "$ans" =~ ^[Yy]$ ]]; then
-        local dest="./${out:r}"
-        mkdir -p -- "$dest"
+        local listing=""
         if [[ "$out" == *.tar.zst ]]; then
-          print -P "%F{244}→%f zstd -d -c ${(q)out} | tar -C ${(q)dest} -xf -"
-          zstd -d -c "$out" | tar -C "$dest" -xf - || rc=$?
+          listing="$(zstd -d -c "$out" | tar -tf - 2>/dev/null)" || true
         elif [[ "$out" == *.tar.gz ]]; then
-          print -P "%F{244}→%f tar -C ${(q)dest} -xzf ${(q)out}"
-          tar -C "$dest" -xzf "$out" || rc=$?
+          listing="$(tar -tzf "$out" 2>/dev/null)" || true
         else
-          print -P "%F{244}→%f tar -C ${(q)dest} -xf ${(q)out}"
-          tar -C "$dest" -xf "$out" || rc=$?
+          listing="$(tar -tf "$out" 2>/dev/null)" || true
+        fi
+
+        local target_dir="$dest"
+        if [[ -n "$listing" ]] && ! print -r -- "$listing" | grep -qvE "^${base_name}(/|$)"; then
+          target_dir="$out_dir"
+        else
+          mkdir -p -- "$target_dir"
+        fi
+
+        local ext_ok=0
+        if [[ "$out" == *.tar.zst ]]; then
+          print -Pn "%F{244}→%f "; print -r -- "zstd -d -c ${(q)out} | tar -C ${(q)target_dir} -xf -"
+          zstd -d -c "$out" | tar -C "$target_dir" -xf - && ext_ok=1
+        elif [[ "$out" == *.tar.gz ]]; then
+          print -Pn "%F{244}→%f "; print -r -- "tar -C ${(q)target_dir} -xzf ${(q)out}"
+          tar -C "$target_dir" -xzf "$out" && ext_ok=1
+        else
+          print -Pn "%F{244}→%f "; print -r -- "tar -C ${(q)target_dir} -xf ${(q)out}"
+          tar -C "$target_dir" -xf "$out" && ext_ok=1
+        fi
+
+        if (( ext_ok )); then
+          _rm_plain "$out"
+        else
+          rc=1
         fi
       fi
     fi
@@ -227,30 +353,33 @@ gpg.dec(){
   return $rc
 }
 
-# Decrypt to stdout, useful for piping
+# decrypt to stdout, useful for piping
 gpg.dec_stdout(){
   _gpg_check || return 1
   local f="$1"; [[ -z "$f" ]] && { _err "usage: gpg.dec_stdout file.gpg"; return 1; }
   gpg --decrypt "$f"
 }
 
-# Sign files. Choose clearsign or detached, pick secret key.
+# sign files. Choose clearsign or detached, pick secret key.
 gpg.sign(){
   emulate -L zsh; setopt pipefail
   _gpg_check || return 1
   local mode
   mode=$(printf "%s\n" "clearsign" "detach-sign" | fzf --prompt="sign mode ⇢ ") || return 1
   local key; key="$(_gpg_pick_sec_one)" || return 1
-  local -a picks; picks=("${(@f)$(_gpg_pick_files "$@")}")
+  [[ -z "$key" ]] && { _err "no key selected"; return 1; }
+
+  local raw_picks; raw_picks="$(_gpg_pick_files "$@")" || true
+  local -a picks=(); [[ -n "$raw_picks" ]] && picks=("${(@f)raw_picks}")
   (( ${#picks[@]} )) || { _err "nothing selected"; return 1; }
 
   local rc=0 f
   for f in "${picks[@]}"; do
     if [[ "$mode" == "clearsign" ]]; then
-      print -P "%F{244}→%f gpg --local-user ${(q)key} --clearsign ${(q)f}"
+      print -Pn "%F{244}→%f "; print -r -- "gpg --local-user ${(q)key} --clearsign ${(q)f}"
       gpg --local-user "$key" --clearsign "$f" || rc=$?
     else
-      print -P "%F{244}→%f gpg --local-user ${(q)key} --detach-sign ${(q)f}"
+      print -Pn "%F{244}→%f "; print -r -- "gpg --local-user ${(q)key} --detach-sign ${(q)f}"
       gpg --local-user "$key" --detach-sign "$f" || rc=$?
     fi
   done
@@ -261,11 +390,12 @@ gpg.sign(){
 # Verify signatures
 gpg.verify(){
   _gpg_check || return 1
-  local -a picks; picks=("${(@f)$(_gpg_pick_files "$@")}")
+  local raw_picks; raw_picks="$(_gpg_pick_files "$@")" || true
+  local -a picks=(); [[ -n "$raw_picks" ]] && picks=("${(@f)raw_picks}")
   (( ${#picks[@]} )) || { _err "nothing selected"; return 1; }
   local f rc=0
   for f in "${picks[@]}"; do
-    print -P "%F{244}→%f gpg --verify ${(q)f}"
+    print -Pn "%F{244}→%f "; print -r -- "gpg --verify ${(q)f}"
     gpg --verify "$f" && _ok "verified $f" || { _err "verify failed: $f"; rc=1; }
   done
   return $rc
@@ -274,14 +404,14 @@ gpg.verify(){
 # Export and import keys
 gpg.export_pub(){
   _gpg_check || return 1
-  local fpr="$(_gpg_pick_pub_multi | head -n1)" || return 1
+  local fpr; fpr="$(_gpg_pick_pub_one)" || return 1
   [[ -z "$fpr" ]] && { _err "no key selected"; return 1; }
   gpg --armor --export "$fpr" | tee "pubkey-${fpr}.asc" | _clip >/dev/null
   _ok "exported to pubkey-${fpr}.asc and copied to clipboard"
 }
 gpg.export_sec(){
   _gpg_check || return 1
-  local fpr="$(_gpg_pick_sec_one)" || return 1
+  local fpr; fpr="$(_gpg_pick_sec_one)" || return 1
   [[ -z "$fpr" ]] && { _err "no key selected"; return 1; }
   local out="seckey-${fpr}.asc"
   _warn "exporting secret key. protect this file."
@@ -289,7 +419,8 @@ gpg.export_sec(){
 }
 gpg.import(){
   _gpg_check || return 1
-  local -a picks; picks=("${(@f)$(_gpg_pick_files "$@")}")
+  local raw_picks; raw_picks="$(_gpg_pick_files "$@")" || true
+  local -a picks=(); [[ -n "$raw_picks" ]] && picks=("${(@f)raw_picks}")
   (( ${#picks[@]} )) || { _err "nothing selected"; return 1; }
   gpg --import "${picks[@]}"
 }
@@ -306,7 +437,7 @@ gpg.recv(){
 # Edit ownertrust for a key
 gpg.trust(){
   _gpg_check || return 1
-  local fpr; fpr="$(_gpg_pick_pub_multi | head -n1)" || return 1
+  local fpr; fpr="$(_gpg_pick_pub_one)" || return 1
   [[ -z "$fpr" ]] && { _err "no key selected"; return 1; }
   gpg --edit-key "$fpr" trust quit
 }
@@ -324,7 +455,7 @@ gpg.gen(){
 # Delete key (pub and secret) with confirmation
 gpg.del(){
   _gpg_check || return 1
-  local fpr; fpr="$(_gpg_pick_pub_multi | head -n1)" || return 1
+  local fpr; fpr="$(_gpg_pick_pub_one)" || return 1
   [[ -z "$fpr" ]] && { _err "no key selected"; return 1; }
   print -n "Type the fingerprint to confirm delete: "
   local conf; read -r conf
@@ -372,9 +503,9 @@ gpg.ls(){
 gpg.help(){
 cat <<'EOF'
 gpg. menu
-  enc            Encrypt file(s) for selected recipients or symmetric
-  dir            Tar-compress directory then encrypt
-  dec            Decrypt file(s), optional extract if tar.*
+  enc            Encrypt file(s) in place (replaces originals with .gpg)
+  dir            Tar-compress directory and encrypt in place (replaces dir with .tar.zst.gpg)
+  dec            Decrypt file(s) in place (removes .gpg/.asc, optional extract + archive cleanup)
   dec_stdout     Decrypt to stdout
   sign           Clearsign or detached-sign with picked key
   verify         Verify signature files
@@ -399,7 +530,7 @@ gpg.(){
   _gpg_check || return 1
   local cmd="$1"
   if [[ -n "$cmd" ]]; then
-    shift # safe: we only shift when $1 existed
+    shift
   else
     cmd=$(
       printf "%s\n" \
@@ -413,7 +544,14 @@ gpg.(){
     )
     [[ -z "$cmd" ]] && return 1
   fi
-  "gpg.${cmd}" "$@"
+  if typeset -f "gpg.${cmd}" >/dev/null 2>&1; then
+    "gpg.${cmd}" "$@"
+  elif typeset -f "$cmd" >/dev/null 2>&1; then
+    "$cmd" "$@"
+  else
+    _err "unknown subcommand: $cmd"
+    return 1
+  fi
 }
 
 # ---------- zsh completion for gpg. ----------
@@ -454,10 +592,11 @@ passenc() {
 
     output_file="${input_file}.gpg"
 
-    if print -r -- "$pass" | gpg --symmetric --cipher-algo AES256 --pinentry-mode loopback --passphrase-fd 0 --quiet --batch --yes --output "$output_file" "$input_file"; then
+    if print -r -- "$pass" | gpg --symmetric --cipher-algo AES256 --pinentry-mode loopback --passphrase-fd 0 --quiet --batch --yes --output "$output_file" "$input_file" && [[ -s "$output_file" ]]; then
       shred -u -- "$input_file" 2>/dev/null || rm -f -- "$input_file"
       echo -e "\e[1;32mEncrypted $input_file -> $output_file\e[0m"
     else
+      rm -f -- "$output_file"
       echo -e "\e[1;31mEncryption failed for $input_file\e[0m"
       rc=1
     fi
@@ -488,10 +627,11 @@ passdec() {
 
     output_file="${input_file%.gpg}"
 
-    if print -r -- "$pass" | gpg --pinentry-mode loopback --passphrase-fd 0 --quiet --batch --yes --decrypt --output "$output_file" "$input_file" 2>/dev/null; then
+    if print -r -- "$pass" | gpg --pinentry-mode loopback --passphrase-fd 0 --quiet --batch --yes --decrypt --output "$output_file" "$input_file" 2>/dev/null && [[ -s "$output_file" ]]; then
       shred -u -- "$input_file" 2>/dev/null || rm -f -- "$input_file"
       echo -e "\e[1;32mDecrypted $input_file -> $output_file\e[0m"
     else
+      rm -f -- "$output_file"
       echo -e "\e[1;31mDecryption failed for $input_file\e[0m"
       rc=1
     fi
@@ -500,4 +640,4 @@ passdec() {
   return $rc
 }
 
-loadpg() { pkill -9 gpg-agent; export GPG_TTY=$(tty); }
+loadpg() { gpgconf --kill gpg-agent 2>/dev/null || pkill -9 gpg-agent 2>/dev/null || true; export GPG_TTY="$(tty 2>/dev/null || true)"; }
