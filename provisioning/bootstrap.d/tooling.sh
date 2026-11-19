@@ -25,7 +25,7 @@ STACK=(
   tmux
   kitty
   wofi
-  mako
+  mako-notifier
   lsd
   fzf
   ripgrep
@@ -84,7 +84,7 @@ run_local_script(){
     zsh "$p"
   else
     info "run bash: $rel"
-  bash "$p" "${@:2}"
+    bash "$p" "${@:2}"
   fi
 }
 
@@ -321,20 +321,20 @@ apply(){
   info "installing core runtimes"
   run_local_script "provisioning/runtimes/rust"
   run_local_script "provisioning/runtimes/node"
-run_local_script "provisioning/runtimes/pnpm" install
+  run_local_script "provisioning/runtimes/pnpm" install
   run_local_script "provisioning/runtimes/go"
   run_local_script "provisioning/runtimes/uv"
 
   info "setting up shell plugins"
   run_local_script "provisioning/setup/shell/enable-zsh-plugs.zsh"
 
+  info "installing home configuration"
+  run_local_script "config/_install_"
+
   ok "done"
   if [[ "${OSYX_BOOTSTRAP_NEEDS_RELOGIN:-0}" == "1" ]]; then
     warn "relogin or reboot is required (groups/shell)"
   fi
-  
-  bash "$REPO_ROOT/bin/_install_"
-  bash "$REPO_ROOT/config/_install_"
 }
 
 fresh_root_stage(){
