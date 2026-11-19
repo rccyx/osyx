@@ -84,7 +84,7 @@ run_local_script(){
     zsh "$p"
   else
     info "run bash: $rel"
-    bash "$p"
+  bash "$p" "${@:2}"
   fi
 }
 
@@ -321,7 +321,7 @@ apply(){
   info "installing core runtimes"
   run_local_script "provisioning/runtimes/rust"
   run_local_script "provisioning/runtimes/node"
-  run_local_script "provisioning/runtimes/pnpm"
+run_local_script "provisioning/runtimes/pnpm" install
   run_local_script "provisioning/runtimes/go"
   run_local_script "provisioning/runtimes/uv"
 
