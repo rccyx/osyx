@@ -1,0 +1,30 @@
+name: Bin
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: bin
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install workspace toolchain
+        run: rustup show active-toolchain
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: bin
+
+      - uses: extractions/setup-just@v3
+
+      - name: Format, lint, test, and build
+        run: just ci
