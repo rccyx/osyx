@@ -39,7 +39,7 @@
   </tr>
   <tr>
     <td><img width="100%" alt="osyx desktop" src="https://github.com/user-attachments/assets/8475976a-f782-4dbe-8fb6-5509e8deb4cc" /></td>
-    <td><img width="100%" alt="osyx desktop" src="https://github.com/user-attachments/assets/2db00115-811c-4391-b6a6-0e3bd839a282" /></td>
+    <td><img width="100%" alt="osyx desktop" src="https://github.com/user-attachments/assets/94624f38-8e32-45d8-9723-924b7a56f0f1" /></td>
   </tr>
 </table>
 
