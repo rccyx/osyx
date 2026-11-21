@@ -23,9 +23,6 @@ source "$HOME/zsh/tools.zsh"
 # Personal aliases
 source "$HOME/zsh/_aliases.zsh"
 
-# Jarvis command center
-[ -f "$HOME/jarvis/entrypoint.zsh" ] && source "$HOME/jarvis/entrypoint.zsh"
-
 # This auto sources/execs everything in osyx root slash bin (add that folder to home if not added, bootstrap does it)
 # Whenever a new file is added, no need to chmod again
 export PATH="$HOME/bin:$PATH"
@@ -38,13 +35,11 @@ for file in "$HOME/bin"/*(N.); do
   [[ -x "$file" ]] || chmod u+x -- "$file"
 done
 
-
 # Theme orchestrator (dircolors, live reload, themes function)
 source "$HOME/flavors/themes.zsh"
 
 # cashout potential
 ulimit -c 0
-
 
 # >>> osyx:pnpm >>>
 export PNPM_HOME="$HOME/.local/share/pnpm"
@@ -60,6 +55,8 @@ path=(
 export PATH
 # <<< osyx:pnpm <<<
 
+# <<< osyx:nvm <<<
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+# <<< osyx:pnpm <<<
