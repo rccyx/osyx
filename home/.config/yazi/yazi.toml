@@ -1,0 +1,25 @@
+[mgr]
+ratio = [1, 3, 4]
+mouse_events = ["click", "scroll", "drag"]
+sort_by = "natural"
+sort_dir_first = true
+scrolloff = 4
+
+[preview]
+max_width = 1280
+max_height = 1600
+image_quality = 90
+
+[opener]
+image = [
+    { run = "mpv --image-display-duration=inf -- %s1", desc = "View image", orphan = true },
+]
+video = [
+    { run = "mpv -- %s1", desc = "Play video", orphan = true },
+]
+
+[open]
+prepend_rules = [
+    { mime = "image/*", use = ["image", "open"] },
+    { mime = "video/*", use = ["video", "open"] },
+]

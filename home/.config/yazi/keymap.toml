@@ -1,0 +1,5 @@
+[mgr]
+prepend_keymap = [
+    { on = "<Enter>", run = 'lua -- local item = cx.active.current.hovered; if item then ya.emit(item.cha.is_dir and "enter" or "open", { hovered = true }) end', desc = "Enter folder or open file" },
+    { on = "<Backspace>", run = "leave", desc = "Go to parent folder" },
+]
