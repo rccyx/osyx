@@ -18,7 +18,7 @@ app() {
     chatgpt     https://chatgpt.com
     cc          https://chatgpt.com
     claude      https://claude.ai
-    ld          https://claude.ai
+    cl          https://claude.ai
     x           https://x.com
     twitter     https://x.com
     mail        https://www.icloud.com/mail
