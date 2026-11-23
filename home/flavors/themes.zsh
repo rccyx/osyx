@@ -255,11 +255,8 @@ _osyx_apply_wallpaper() {
   if command -v wallpaper >/dev/null 2>&1; then
     wallpaper set "$wallpaper_file" >/dev/null 2>&1 \
       || _osyx_log "wallpaper set failed for $wallpaper_file"
-  elif command -v waypaper >/dev/null 2>&1; then
-    waypaper --wallpaper "$wallpaper_file" >/dev/null 2>&1 \
-      || _osyx_log "waypaper failed for $wallpaper_file"
   else
-    _osyx_log "no wallpaper tool found, skipping"
+    _osyx_log "wallpaper command unavailable, skipping"
   fi
 }
 

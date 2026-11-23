@@ -67,8 +67,7 @@ hl.on("hyprland.start", function()
     hl.exec_cmd('brave-browser --profile-directory="Default" --app="https://youtube.com"')
 
     -- Background programs. These launches do not wait for each other.
-    hl.exec_cmd("swww-daemon") -- wallpaper
-    hl.exec_cmd("waypaper --backend swww --restore") -- wallpaper
+    hl.exec_cmd("swww-daemon") -- restores the previous wallpaper from its cache
     hl.exec_cmd("hyprsunset") -- nigh mode
     hl.exec_cmd("mako") -- notficiations
     hl.exec_cmd("pavucontrol --hide-window --start-hidden") --audio 
