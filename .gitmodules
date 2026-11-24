@@ -14,3 +14,14 @@
     path = packages/asryx
   	url = https://github.com/rccyx/asryx.git
 
+[submodule "clipyx"]
+    path = packages/clipyx
+  	url = https://github.com/rccyx/clipyx.git
+
+[submodule "visyx"]
+    path = packages/visyx
+  	url = https://github.com/rccyx/visyx.git
+
+[submodule "bootyx"]
+    path = packages/bootyx
+  	url = https://github.com/rccyx/bootyx.git
