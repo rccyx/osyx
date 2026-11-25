@@ -23,11 +23,14 @@ jobs:
       - name: render the provisioning plan
         shell: bash
         run: |
-          set -o pipefail
-          docker run --rm \
+          if ! docker run --rm \
             -v "$GITHUB_WORKSPACE:/workspace:ro" \
             osyx-bootstrap-trixie ./provisioning/main plan \
-            --user smoke --locale en_US.UTF-8 --timezone Etc/UTC 2>&1 | tee bootstrap.log
+            --user smoke --locale en_US.UTF-8 --timezone Etc/UTC >bootstrap.log 2>&1; then
+            cat bootstrap.log
+            exit 1
+          fi
+          printf '%s\n' 'Provisioning plan saved to the bootstrap-trixie-plan artifact.'
 
       - name: upload bootstrap log
         if: always()

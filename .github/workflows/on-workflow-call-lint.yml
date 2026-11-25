@@ -52,4 +52,4 @@ jobs:
           sudo apt-get install -y luarocks
           sudo luarocks install luacheck
       - name: Lint
-        run: luacheck --config=config/.config/nvim/.luacheckrc config/.config/nvim
+        run: luacheck --config=home/.config/nvim/.luacheckrc home/.config/nvim

@@ -74,7 +74,7 @@ jobs:
     
   bin:
     needs: bin-changes
-    if: needs.nin-changes.outputs.changed == 'true'
+    if: needs.bin-changes.outputs.changed == 'true'
     uses: ./.github/workflows/on-workflow-call-bin.yml
 
   zsh-changes:
