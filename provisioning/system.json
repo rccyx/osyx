@@ -1,0 +1,16 @@
+{
+  "ca-certificates": "trusted certificates for Debian and upstream downloads",
+  "gnupg": "signature verification and Git signing",
+  "curl": "artifact downloads",
+  "wget": "downloader used by workstation tooling",
+  "git": "repository and submodule checkouts",
+  "locales": "generate the workstation locale",
+  "tzdata": "timezone definitions",
+  "dbus": "system message bus",
+  "dbus-user-session": "desktop session bus",
+  "xdg-user-dirs": "standard user directories",
+  "sudo": "privilege escalation from the workstation account",
+  "network-manager": "workstation network service",
+  "nix-bin": "Nix package manager",
+  "nix-setup-systemd": "Debian Nix daemon setup"
+}

@@ -1,68 +1,38 @@
-name: Smoke
+name: bootstrap
 
 on:
-  workflow_dispatch:
   workflow_call:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  smoke:
+  trixie:
     runs-on: ubuntu-latest
-    name: build (debian-trixie)
-
+    timeout-minutes: 60
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - name: checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
-          fetch-depth: 0
+          persist-credentials: false
 
-      - name: Build local test container
-        run: |
-          docker build -t osyx-test-trixie .github/images/trixie
+      - name: build blank Trixie fixture
+        run: docker build -t osyx-bootstrap-trixie .github/images/trixie -f .github/images/trixie/bootstrap.Dockerfile
 
-      - name: Run Bootstrap Integration Test
+      - name: render the provisioning plan
+        shell: bash
         run: |
+          set -o pipefail
           docker run --rm \
-            -v ${{ github.workspace }}:/tmp/workspace:ro \
-            osyx-test-trixie bash -c "
-              set -euo pipefail
+            -v "$GITHUB_WORKSPACE:/workspace:ro" \
+            osyx-bootstrap-trixie ./provisioning/main plan \
+            --user smoke --locale en_US.UTF-8 --timezone Etc/UTC 2>&1 | tee bootstrap.log
 
-              # 1. Copy repo to smoke user's home (avoids GH runner permission conflicts)
-              sudo rsync -a /tmp/workspace/ /home/smoke/osyx/
-              sudo chown -R smoke:smoke /home/smoke/osyx
-              cd /home/smoke/osyx
-
-              # 2. Allow git in copied repo
-              git config --global --add safe.directory /home/smoke/osyx
-
-              echo '>>> Running Fresh Bootstrap (root stage)...'
-              sudo bash ./provisioning/bootstrap fresh \
-                --user=smoke \
-                --yes \
-                --locale=en_US.UTF-8 \
-                --tz=Europe/London
-
-              echo '>>> Fixing ownership after root stage...'
-              sudo chown -R smoke:smoke /home/smoke/osyx
-              sudo chmod -R u+rwX,go+rX /home/smoke/osyx
-
-              echo '>>> Running Bootstrap Plan...'
-              bash ./provisioning/bootstrap plan \
-                --profile=min \
-                --locale=en_US.UTF-8 \
-                --tz=Europe/London
-
-              echo '>>> Running Bootstrap Apply...'
-              bash ./provisioning/bootstrap apply \
-                --profile=min \
-                --yes \
-                --locale=en_US.UTF-8 \
-                --tz=Europe/London
-
-              echo '>>> Checking Bootstrap Status...'
-              bash ./provisioning/bootstrap status
-
-              echo '>>> Smoke test completed successfully.'
-            "
+      - name: upload bootstrap log
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: bootstrap-trixie-plan
+          path: bootstrap.log
+          if-no-files-found: ignore

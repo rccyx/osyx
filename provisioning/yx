@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
+readonly root
+export PATH="$HOME/.local/bin:$PATH"
+
+[[ $EUID -ne 0 ]] || { printf '%s\n' 'run as the workstation user' >&2; exit 1; }
+
+ask()
+{
+  local answer
+  read -r -p "$1 [y/N] " answer && [[ $answer == [yY] || $answer == [yY][eE][sS] ]]
+}
+
+install_asryx()
+{
+  git -C "$root" submodule update --init -- packages/asryx
+  (cd "$root/packages/asryx" && bash ./package/install)
+}
+
+install_lookas()
+{
+  local pin
+  pin="$(git -C "$root" rev-parse HEAD:packages/lookas)"
+  cargo install --locked --git https://github.com/rccyx/lookas --rev "$pin" lookas
+}
+
+case "${1:-}" in
+  '')
+    if ask 'Install Asryx for offline dictation?'; then install_asryx; fi
+    if ask 'Install Lookas for terminal audio visualization?'; then install_lookas; fi
+    ;;
+  asryx) install_asryx ;;
+  lookas) install_lookas ;;
+  *) printf '%s\n' 'usage: provisioning/yx [asryx|lookas]' >&2; exit 2 ;;
+esac

@@ -1,0 +1,17 @@
+{
+  "starship": {
+    "version": "1.27.0",
+    "crate": "starship",
+    "binary": "starship"
+  },
+  "wl-screenrec": {
+    "version": "6edf054322b8652b66bd6daf4b9b0ebadedd5574",
+    "crate": "wl-screenrec",
+    "binary": "wl-screenrec",
+    "git": "https://github.com/rosalyntg/wl-screenrec"
+  },
+  "swww": {
+    "version": "v0.11.2",
+    "git": "https://github.com/LGFae/swww"
+  }
+}

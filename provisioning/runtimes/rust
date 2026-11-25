@@ -1,7 +1,0 @@
-#!/bin/bash
-set -euo pipefail
-
-curl https://sh.rustup.rs -sSf | sh -s -- -y
-echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.zshrc
-export PATH="$HOME/.cargo/bin:$PATH"
-rustup default stable

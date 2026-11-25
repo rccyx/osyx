@@ -11,7 +11,7 @@
 If you look on the right side of this repository on GitHub, you'll see that I've uploaded the fonts as a release package you can install:
 
 ```sh
-bash provisioning/setup/display/fonts.sh
+provisioning/main apply fonts --user "$USER" --yes
 ```
 
 This downloads the pinned release archive, extracts it into `~/.local/share/fonts/osyx`, and refreshes the Fontconfig cache. Keeps a state file at `.state/fonts.version` and exits cleanly if the installed version already matches.

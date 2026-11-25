@@ -1,0 +1,6 @@
+[Unit]
+Description=Check heat notifications
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/heat-notify

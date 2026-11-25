@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec env HEAT_SMOOTH=1 HEAT_MAX_DELTA=2 "$HOME/.local/bin/heat-notify" --print

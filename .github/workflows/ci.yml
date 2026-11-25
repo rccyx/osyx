@@ -80,7 +80,10 @@ jobs:
   zsh-changes:
     uses: ./.github/workflows/on-workflow-call-changes.yml
     with:
-      directory: config/
+      paths: |
+        home/.zshrc
+        home/zsh
+        .github/workflows/on-workflow-call-zsh.yml
       ignore_docs: true
 
   zsh:
@@ -125,12 +128,19 @@ jobs:
     if: needs.changes.outputs.changed == 'true'
     uses: ./.github/workflows/on-workflow-call-forbidden-blobs.yml
 
-  bootstrap:
-    needs: [secrets, changes]
-    if: needs.changes.outputs.changed == 'true'
-    uses: ./.github/workflows/on-workflow-call-bootstrap.yml
+  bootstrap-changes:
+    uses: ./.github/workflows/on-workflow-call-changes.yml
+    with:
+      paths: |
+        provisioning
+        home
+        .github/images/trixie/bootstrap.Dockerfile
+        .github/workflows/ci.yml
+        .github/workflows/on-workflow-call-bootstrap.yml
+        .github/workflows/on-workflow-call-changes.yml
+      ignore_docs: true
 
-  apps:
-    needs: [secrets, changes]
-    if: needs.changes.outputs.changed == 'true'
-    uses: ./.github/workflows/on-workflow-call-apps.yml
+  bootstrap:
+    needs: bootstrap-changes
+    if: needs.bootstrap-changes.outputs.changed == 'true'
+    uses: ./.github/workflows/on-workflow-call-bootstrap.yml

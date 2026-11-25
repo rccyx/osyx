@@ -9,7 +9,7 @@ permissions:
 
 defaults:
   run:
-    working-directory: config/zsh/functions/
+    working-directory: home
 
 jobs:
   lint:
@@ -47,14 +47,14 @@ jobs:
           echo "==> Zsh parse-only scan (-n)"
           for f in "${FILES[@]}"; do
             if ! zsh -n "$f" 2>"$RUNNER_TEMP/zsherr.txt"; then
-              echo "::error file=config/zsh/functions/${f#./}::zsh parse failed"
+              echo "::error file=home/${f#./}::zsh parse failed"
               sed -n '1,120p' "$RUNNER_TEMP/zsherr.txt" || true
               fail=1
             fi
           done
 
           echo "==> Entrypoint load test (source twice, sandbox HOME; mount repo as \$HOME/jarvis)"
-          entrypoint="./entrypoint.zsh"
+          entrypoint="./zsh/cmd/entrypoint.zsh"
           if [[ -f "$entrypoint" ]]; then
             tmp="$(mktemp -d)"
             trap 'rm -rf "$tmp"' EXIT
@@ -71,8 +71,8 @@ jobs:
             if ! zsh -fc '
               emulate -L zsh
               setopt ERR_RETURN
-              source "$HOME/jarvis/config/zsh/functions/entrypoint.zsh"
-              source "$HOME/jarvis/config/zsh/functions/entrypoint.zsh"
+              source "$HOME/jarvis/home/zsh/cmd/entrypoint.zsh"
+              source "$HOME/jarvis/home/zsh/cmd/entrypoint.zsh"
             ' 2>"$RUNNER_TEMP/zshloaderr.txt"; then
               echo "::error file=config/zsh/functions/entrypoint.zsh::entrypoint load test failed"
               sed -n '1,160p' "$RUNNER_TEMP/zshloaderr.txt" || true

@@ -175,16 +175,22 @@ And other smaller utilities under `./packages`.
 
 ## Bootstrap
 
-Have a look at this [CI workflow](./.github/workflows/on-workflow-call-bootstrap.yml).
+From a root TTY on Debian Trixie amd64, run from a checkout readable by the workstation user. The entrypoint requires Debian's `git` and `python3`.
 
-The bootstrap process is like this:
+```bash
+provisioning/main plan --user USER --locale en_US.UTF-8 --timezone Etc/UTC
+provisioning/main apply --user USER --locale en_US.UTF-8 --timezone Etc/UTC --yes
+provisioning/main doctor --user USER
+```
 
-| Stage | Name | What it does |
-| :--- | :--- | :--- |
-| 0 | Root Bootstrap | Boots a fresh Debian install (bare metal). Sets up network interfaces, core system packages, user privileges, and atomic state directories. |
-| 1 | User Bootstrap | Configures user groups (audio, video, input, etc), installs base display libraries, sets Zsh as default shell, and provisions language runtimes/package managers (rust, node, go, uv, etc). |
-| 2 | Hyprland/Wayland | Invokes hypr-builder to compile the visual desktop so we exit the TTY gulag, Wayland protocols, and dependencies natively for the host CPU architecture. |
-| 3 | Workstation Layer | Provisions custom binaries (asryx, thyx, lookas, powyx, etc), generates global visual themes via flavors, and hooks up event notifications. |
+The command copies tracked home files as the workstation user, provisions the Debian base and Nix, then installs the runtimes, desktop packages, workstation features, Chrome, Obsidian and VS Code. At the end it offers to run the GCC and Hyprland builders. For noninteractive use, pass `--builders` to select them. Run `provisioning/yx` separately for Asryx and Lookas. `home` and `system` can also run individually. The home copy preserves conflicting files by default. Pass `--replace-home` to plan and apply replacements explicitly.
+
+```bash
+provisioning/main plan --remove --user USER
+provisioning/main reset --user USER --yes
+```
+
+Reset removes provisioner-owned changes. A changed managed file or a package removal that would affect unrelated packages stops reset. Run system reset from a root TTY. The [Trixie workflow](./.github/workflows/on-workflow-call-bootstrap.yml) renders the provisioning plan from a fixture without sudo.
 
 ### Hypr Builders
 

@@ -5,7 +5,12 @@ on:
     inputs:
       directory:
         description: repository-relative directory to watch
-        required: true
+        default: .
+        type: string
+
+      paths:
+        description: newline-delimited repository paths to watch
+        default: ""
         type: string
 
       ignore_docs:
@@ -39,6 +44,7 @@ jobs:
         shell: bash
         env:
           DIRECTORY: ${{ inputs.directory }}
+          PATHS: ${{ inputs.paths }}
           IGNORE_DOCS: ${{ inputs.ignore_docs }}
 
           EVENT_NAME: ${{ github.event_name }}
@@ -54,9 +60,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          directory="${DIRECTORY#./}"
-          directory="${directory#/}"
-          directory="${directory%/}"
+          mapfile -t watched <<< "${PATHS:-$DIRECTORY}"
 
           base=""
           head=""
@@ -115,12 +119,6 @@ jobs:
           changed=false
 
           for path in "${changed_files[@]}"; do
-            if [[ -n "${directory}" && "${directory}" != "." ]]; then
-              if [[ "${path}" != "${directory}" && "${path}" != "${directory}/"* ]]; then
-                continue
-              fi
-            fi
-
             if [[ "${IGNORE_DOCS}" == "true" ]]; then
               case "${path}" in
                 *.md | \
@@ -135,8 +133,15 @@ jobs:
               esac
             fi
 
-            changed=true
-            break
+            for prefix in "${watched[@]}"; do
+              prefix="${prefix#./}"
+              prefix="${prefix#/}"
+              prefix="${prefix%/}"
+              if [[ "$prefix" == "." || "$path" == "$prefix" || "$path" == "$prefix/"* ]]; then
+                changed=true
+                break 2
+              fi
+            done
           done
 
           echo "changed=${changed}" >>"${GITHUB_OUTPUT}"

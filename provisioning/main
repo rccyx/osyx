@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+if [[ ! -x /usr/bin/python3 || ! -x /usr/bin/git ]]; then
+  printf '%s\n' 'osyx: the checkout requires Debian python3 and git' >&2
+  exit 1
+fi
+
+root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+exec /usr/bin/python3 -Bu "$root/lib/main.py" "$@"

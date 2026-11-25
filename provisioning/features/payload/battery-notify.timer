@@ -1,0 +1,9 @@
+[Unit]
+Description=Schedule battery notifications
+
+[Timer]
+OnStartupSec=1m
+OnUnitActiveSec=1m
+
+[Install]
+WantedBy=timers.target

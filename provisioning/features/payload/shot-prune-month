@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DIR="${SCREENSHOT_DIR:-$HOME/Pictures/Screenshots}"
+DRY_RUN="${DRY_RUN:-0}"
+
+mkdir -p "$DIR"
+
+del() {
+  if [ "$DRY_RUN" = "1" ]; then
+    find "$DIR" -maxdepth 1 -type f \
+      \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' \) \
+      "$@"
+  else
+    find "$DIR" -maxdepth 1 -type f \
+      \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' \) \
+      "$@" -print -delete
+  fi
+}
+
+cutoff="$(date -d "1 month ago" +%F)"
+del ! -newermt "$cutoff"

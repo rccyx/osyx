@@ -1,7 +1,0 @@
-#!/bin/bash
-
-set -e
-nix --version
-export NIXPKGS_ALLOW_INSECURE=1
-export NIXPKGS_ALLOW_UNFREE=1
-nix profile install 'nixpkgs#obsidian'

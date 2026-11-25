@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+dir="$HOME/Pictures/Screenshots"
+mkdir -p "$dir"
+out="$(mktemp --suffix=.png "$dir/$(date +%Y-%m-%d_%H-%M-%S)-XXXXXX")"
+trap '[[ -s "$out" ]] || rm -f -- "$out"' EXIT
+
+args=()
+if [[ ${0##*/} == shot-mac ]]; then
+  geometry="$(slurp)"
+  args=(-g "$geometry")
+fi
+
+grim "${args[@]}" "$out"
+wl-copy --type image/png < "$out"
+notify-send "Screenshot saved and copied" "$out"
+
+if (( ${#args[@]} )); then
+  swappy -f "$out" -o "$out"
+fi

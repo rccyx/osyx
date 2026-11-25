@@ -1,0 +1,215 @@
+#!/usr/bin/env bash
+set -o pipefail
+
+HEAT_STATE_DIR="${HEAT_STATE_DIR:-$HOME/.cache/heat-notify}"
+SRC_FILE="$HEAT_STATE_DIR/source_path"
+LAST_FILE="$HEAT_STATE_DIR/last_value"
+
+read_temp_file() {
+  local p="$1" v
+  [[ -r "$p" ]] || return 1
+  v=$(<"$p") || return 1
+  [[ -n "$v" ]] || return 1
+  if [[ "$v" -gt 200 ]]; then printf "%d" $((v/1000)); else printf "%d" "$v"; fi
+}
+
+find_best_source_path() {
+  # 0) explicit override
+  if [[ -n "${HEAT_CPU_PATH:-}" ]]; then
+    [[ -r "$HEAT_CPU_PATH" ]] && { echo "$HEAT_CPU_PATH"; return 0; }
+  fi
+
+  shopt -s nullglob
+
+  # 1) thermal zones, strict priority for stability
+  for z in /sys/class/thermal/thermal_zone*; do
+    [[ -r "$z/type" && -r "$z/temp" ]] || continue
+    read -r typ <"$z/type" || true
+    case "${typ,,}" in
+      x86_pkg_temp) echo "$z/temp"; return 0 ;;
+    esac
+  done
+  for z in /sys/class/thermal/thermal_zone*; do
+    [[ -r "$z/type" && -r "$z/temp" ]] || continue
+    read -r typ <"$z/type" || true
+    case "${typ,,}" in
+      cpu_thermal|soc_thermal|*pkg*temp*) echo "$z/temp"; return 0 ;;
+    esac
+  done
+
+  # 2) hwmon by name and labels
+  for h in /sys/class/hwmon/hwmon*; do
+    [[ -r "$h/name" ]] || continue
+    read -r nm <"$h/name" || true
+    case "${nm,,}" in
+      coretemp|k10temp|zenpower|acpitz|pch_*)
+        for l in "$h"/temp*_label; do
+          [[ -r "$l" ]] || continue
+          lbl="$(tr '[:upper:]' '[:lower:]' <"$l")"
+          case "$lbl" in
+            *tctl*|*tdie*|*package*|*cpu*)
+              echo "${l/_label/_input}"; return 0
+          esac
+        done
+        for i in "$h"/temp*_input; do
+          echo "$i"; return 0
+        done
+      ;;
+    esac
+  done
+
+  # 3) lm-sensors only as a last resort for printing, cannot cache a path
+  echo ""
+  return 1
+}
+
+detect_temp_raw() {
+  local t path
+
+  # try cached path first
+  if [[ -r "$SRC_FILE" ]]; then
+    path="$(<"$SRC_FILE")"
+    t="$(read_temp_file "$path")" && { echo "$t"; return 0; }
+    # cache stale, drop it
+    rm -f "$SRC_FILE"
+  fi
+
+  # resolve and cache
+  path="$(find_best_source_path)"
+  if [[ -n "$path" ]]; then
+    t="$(read_temp_file "$path")" && {
+      mkdir -p "$HEAT_STATE_DIR"
+      printf "%s" "$path" > "$SRC_FILE"
+      echo "$t"
+      return 0
+    }
+  fi
+
+  # fallback: parse sensors once, uncached
+  if command -v sensors >/dev/null 2>&1; then
+    t="$(sensors 2>/dev/null | awk '/(Tctl|Tdie|Package id 0)/{if (match($0, /[+][0-9]+(\.[0-9]+)?/)) {printf "%.0f\n", substr($0, RSTART, RLENGTH); exit}}')" || true
+    [[ -n "$t" ]] && { echo "$t"; return 0; }
+  fi
+
+  return 1
+}
+
+smooth_for_print() {
+  local c="$1" last maxd
+  [[ "${HEAT_SMOOTH:-0}" = "0" ]] && { echo "$c"; return 0; }
+  mkdir -p "$HEAT_STATE_DIR"
+  maxd="${HEAT_MAX_DELTA:-3}"
+  if [[ -r "$LAST_FILE" ]]; then
+    last="$(<"$LAST_FILE")"
+    [[ -n "$last" ]] || last="$c"
+    local diff=$(( c - last ))
+    if   (( diff >  maxd )); then c=$(( last + maxd ))
+    elif (( diff < -maxd )); then c=$(( last - maxd ))
+    fi
+  fi
+  printf "%s" "$c" > "$LAST_FILE"
+  echo "$c"
+}
+
+bucket_for() {
+  local c="$1" b=0
+  # shellcheck disable=SC2206
+  local THS=(${HEAT_THRESHOLDS:-70 80 85})
+  for t in "${THS[@]}"; do [[ "$c" -ge "$t" ]] && b="$t"; done
+  echo "$b"
+}
+
+urgency_for(){ local b="$1"; if   [[ "$b" -ge 80 ]]; then echo critical; elif [[ "$b" -ge 70 ]]; then echo normal; else echo low; fi; }
+title_for(){   local b="$1"; if   [[ "$b" -ge 85 ]]; then echo "CPU emergency - cool now"; elif [[ "$b" -ge 80 ]]; then echo "CPU critical - getting too hot"; elif [[ "$b" -ge 70 ]]; then echo "CPU warm - rising"; else echo "CPU ok"; fi; }
+icon_for(){    local b="$1"; if   [[ "$b" -ge 70 ]]; then echo dialog-warning; else echo utilities-system-monitor; fi; }
+
+should_notify() {
+  [[ "${HEAT_FORCE:-0}" = "1" ]] && return 0
+  local bucket="$1" now last_file="${HEAT_STATE_DIR}/last_bucket"
+  local cd_file="${HEAT_STATE_DIR}/cooldown_${bucket}"
+  now=$(date +%s)
+  local last=0; [[ -f "$last_file" ]] && last=$(<"$last_file")
+  if [[ "$bucket" -le "$last" ]]; then
+    if [[ -f "$cd_file" ]]; then
+      local mins=$(( (now-$(<"$cd_file"))/60 ))
+      [[ "$mins" -ge "${HEAT_COOLDOWN_MIN:-10}" ]] && return 0 || return 1
+    fi
+    return 1
+  fi
+  echo "$bucket" >"$last_file"; echo "$now" >"$cd_file"; return 0
+}
+
+# sustain gate: require continuous time-in-bucket before notifying
+sustain_ok() {
+  local bucket="$1"
+  [[ "${HEAT_FORCE:-0}" = "1" ]] && return 0
+  local sustain="${HEAT_SUSTAIN_SEC:-0}"
+  [[ "$sustain" -le 0 ]] && return 0
+
+  mkdir -p "$HEAT_STATE_DIR"
+  local now curr enter_file curr_file="${HEAT_STATE_DIR}/current_bucket"
+  enter_file="${HEAT_STATE_DIR}/enter_${bucket}"
+  now=$(date +%s)
+
+  if [[ -r "$curr_file" ]]; then curr="$(<"$curr_file")"; else curr=""; fi
+
+  if [[ "$curr" != "$bucket" ]]; then
+    printf "%s" "$bucket" > "$curr_file"
+    printf "%s" "$now"    > "$enter_file"
+    return 1
+  fi
+
+  local start=0
+  [[ -f "$enter_file" ]] && start="$(<"$enter_file")"
+  [[ -n "$start" ]] || start="$now"
+
+  local elapsed=$(( now - start ))
+  [[ "$elapsed" -ge "$sustain" ]] && return 0 || return 1
+}
+
+main() {
+  local print_only=0 debug=0
+  for a in "$@"; do [[ "$a" == "--print" ]] && print_only=1; [[ "$a" == "--debug" ]] && debug=1; done
+
+  local c
+  if [[ -n "${HEAT_FAKE_C:-}" ]]; then
+    c="$HEAT_FAKE_C"
+  else
+    c="$(detect_temp_raw)" || { [[ "$print_only" -eq 1 ]] && { echo "N/A"; exit 1; }; exit 0; }
+  fi
+
+  if (( debug )); then
+    if [[ -r "$SRC_FILE" ]]; then echo "SRC=$(<"$SRC_FILE")" >&2; else echo "SRC=sensors_parse" >&2; fi
+  fi
+
+  if [[ "$print_only" -eq 1 ]]; then
+    mkdir -p "$HEAT_STATE_DIR"
+    c="$(smooth_for_print "$c")"
+    echo "$c"
+    exit 0
+  fi
+
+  mkdir -p "$HEAT_STATE_DIR"
+  local b; b="$(bucket_for "$c")"
+
+  # reset current-bucket when below all thresholds
+  if [[ "$b" -eq 0 ]]; then
+    echo "0" > "${HEAT_STATE_DIR}/current_bucket"
+    exit 0
+  fi
+
+  # sustain gate first
+  if ! sustain_ok "$b"; then
+    exit 0
+  fi
+
+  # then normal notify policy
+  if should_notify "$b"; then
+    notify-send --urgency="$(urgency_for "$b")" --icon="$(icon_for "$b")" --app-name="CPU Heat" "$(title_for "$b")" "${c}°C (≥${b}°)" || true
+  fi
+}
+
+case "$(basename "$0")" in
+  cpu-temp) main --print ;;
+  *)        main "$@" ;;
+esac

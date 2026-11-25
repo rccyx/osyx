@@ -1,0 +1,128 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+read -r -a thresholds <<< "${THRESHOLDS:-50 30 20 10 5}"
+COOLDOWN_MIN=${COOLDOWN_MIN:-20}
+STATE_DIR="${STATE_DIR:-$HOME/.cache/battery-notify}"
+
+mkdir -p "$STATE_DIR"
+log(){ printf "[battery-notify] %s\n" "$*"; }
+
+detect_bat(){
+  local bat
+  if command -v upower >/dev/null 2>&1; then
+    bat=$(upower -e | awk '/battery/{print; exit}')
+    [[ -n "$bat" ]] && { echo "$bat"; return 0; }
+  fi
+  for bat in /sys/class/power_supply/BAT*; do
+    if [[ -r "$bat/capacity" ]]; then
+      printf '%s\n' "$bat"
+      return 0
+    fi
+  done
+  return 1
+}
+
+read_level_and_state(){
+  local dev="$1" level state info
+  if [[ "$dev" =~ ^/sys/class/power_supply ]]; then
+    level=$(cat "$dev/capacity")
+    state=$(tr '[:upper:]' '[:lower:]' < "$dev/status")
+  else
+    info="$(upower -i "$dev")"
+    level=$(awk -F': *' '/percentage/{gsub("%","",$2); print $2}' <<<"$info")
+    state=$(awk -F': *' '/state/{print tolower($2)}' <<<"$info")
+  fi
+  echo "$level" "$state"
+}
+
+bucket_for(){
+  local lvl="$1" b="100"
+  for t in "${thresholds[@]}"; do
+    if (( lvl <= t )); then b="$t"; fi
+  done
+  echo "$b"
+}
+
+should_notify(){
+  # do not record cooldown during forced tests
+  if [[ "${BAT_FORCE:-0}" = "1" ]]; then
+    return 0
+  fi
+  local bucket="$1" now
+  local last_file="$STATE_DIR/last_$bucket"
+  now=$(date +%s)
+  if [[ -f "$last_file" ]]; then
+    local last tsdiff
+    last=$(<"$last_file")
+    tsdiff=$(( (now - last)/60 ))
+    (( tsdiff < COOLDOWN_MIN )) && return 1
+  fi
+  echo "$now" > "$last_file"
+  return 0
+}
+
+urgency_for(){
+  local bucket="$1"
+  if   (( bucket <= 20 )); then echo critical
+  elif (( bucket <= 30 )); then echo normal
+  else                        echo low
+  fi
+}
+
+icon_for(){
+  local lvl="$1"
+  if   (( lvl <= 5 ));   then echo battery-caution-symbolic
+  elif (( lvl <= 10 ));  then echo battery-empty-symbolic
+  elif (( lvl <= 20 ));  then echo battery-low-symbolic
+  elif (( lvl <= 50 ));  then echo battery-medium-symbolic
+  else                       echo battery-good-symbolic
+  fi
+}
+
+send_note(){
+  local urgency="$1" title="$2" body="$3" icon="$4"
+  if command -v notify-send >/dev/null 2>&1; then
+    if [[ "$urgency" = "critical" ]]; then
+      notify-send --app-name="Battery" --urgency="$urgency" --expire-time=0 --icon="$icon" "$title" "$body"
+    else
+      notify-send --app-name="Battery" --urgency="$urgency" --icon="$icon" "$title" "$body"
+    fi
+  else
+    log "notify-send not found. Skipping notification."
+  fi
+}
+
+main(){
+  local dev level state
+  dev=$(detect_bat) || { log "no battery device found"; exit 0; }
+  read -r level state < <(read_level_and_state "$dev")
+
+  # testing overrides
+  if [[ -n "${BAT_FAKE_LEVEL:-}" ]]; then level="$BAT_FAKE_LEVEL"; fi
+  if [[ -n "${BAT_FORCE_STATE:-}" ]]; then state="$BAT_FORCE_STATE"; fi
+  if [[ "${BAT_FORCE:-0}" = "1" ]]; then state="discharging"; fi
+
+  case "$state" in
+    discharging|unknown) ;;  # proceed
+    *) exit 0 ;;             # only notify on discharge
+  esac
+
+  local bucket urgency icon
+  bucket="$(bucket_for "$level")"
+  (( level > thresholds[0] )) && exit 0
+
+  if should_notify "$bucket"; then
+    urgency="$(urgency_for "$bucket")"
+    icon="$(icon_for "$level")"
+    local title
+    if   (( bucket >= 30 )); then title="Battery reminder"
+    elif (( bucket <= 5  )); then title="Battery critically low"
+    elif (( bucket <= 10 )); then title="Battery very low"
+    elif (( bucket <= 20 )); then title="Battery low"
+    else                         title="Battery reminder"
+    fi
+    send_note "$urgency" "$title" "$level% remaining" "$icon"
+  fi
+}
+main "$@"
