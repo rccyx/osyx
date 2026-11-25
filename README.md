@@ -175,22 +175,7 @@ And other smaller utilities under `./packages`.
 
 ## Bootstrap
 
-From a root TTY on Debian Trixie amd64, run from a checkout readable by the workstation user. The entrypoint requires Debian's `git` and `python3`.
-
-```bash
-provisioning/main plan --user USER --locale en_US.UTF-8 --timezone Etc/UTC
-provisioning/main apply --user USER --locale en_US.UTF-8 --timezone Etc/UTC --yes
-provisioning/main doctor --user USER
-```
-
-The command copies tracked home files as the workstation user, provisions the Debian base and Nix, then installs the runtimes, desktop packages, workstation features, Chrome, Obsidian and VS Code. At the end it offers to run the GCC and Hyprland builders. For noninteractive use, pass `--builders` to select them. Run `provisioning/yx` separately for Asryx and Lookas. `home` and `system` can also run individually. The home copy preserves conflicting files by default. Pass `--replace-home` to plan and apply replacements explicitly.
-
-```bash
-provisioning/main plan --remove --user USER
-provisioning/main reset --user USER --yes
-```
-
-Reset removes provisioner-owned changes. A changed managed file or a package removal that would affect unrelated packages stops reset. Run system reset from a root TTY. The [Trixie workflow](./.github/workflows/on-workflow-call-bootstrap.yml) renders the provisioning plan from a fixture without sudo.
+This is WIP. But have a look at `./provisioning/` and this [CI workflow](./.github/workflows/on-workflow-call-bootstrap.yml) 
 
 ### Hypr Builders
 
