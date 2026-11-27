@@ -1,0 +1,8 @@
+nwg-look # select GTK appearance in a Wayland session
+fontconfig # discover fonts and refresh font caches
+adwaita-icon-theme # GTK icon and cursor assets
+adwaita-icon-theme-legacy # legacy GTK application icons
+hicolor-icon-theme # application icon fallback
+librsvg2-common # render SVG icons in GTK
+fonts-noto-color-emoji # emoji fallback
+fonts-noto-core # broad text glyph fallback

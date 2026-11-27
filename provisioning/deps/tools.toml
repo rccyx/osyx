@@ -1,0 +1,20 @@
+# exceptional executable names and repositories, ordinary packages expose their own name
+
+[cargo.dua-cli]
+commands = ["dua"]
+
+[cargo.wl-clipboard-rs-tools]
+commands = ["wl-copy", "wl-paste", "wl-clip"]
+
+[cargo.swww]
+git = "https://github.com/LGFae/swww"
+commands = ["swww", "swww-daemon"]
+
+[cargo.wl-screenrec]
+git = "https://github.com/rosalyntg/wl-screenrec"
+
+[pipx.mypy]
+commands = ["mypy", "dmypy", "stubgen", "stubtest", "mypyc"]
+
+[pnpm.typescript]
+commands = ["tsc"]

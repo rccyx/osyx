@@ -1,0 +1,5 @@
+libavutil-dev # FFmpeg utility bindings for wl-screenrec
+libavformat-dev # FFmpeg container bindings for wl-screenrec
+libavfilter-dev # FFmpeg filter bindings for wl-screenrec
+libavdevice-dev # FFmpeg device bindings for wl-screenrec
+libdrm-dev # DRM buffer capture interfaces for wl-screenrec

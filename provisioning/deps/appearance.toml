@@ -1,0 +1,21 @@
+[fonts]
+version = "fonts-v1.0.0"
+url = "https://github.com/rccyx/osyx/releases/download/fonts-v1.0.0/fonts-v1.0.0.tar.gz"
+sha256 = "a1df57ae6fdb160b8ec73d5363d7a0a5de06a603d7511a6d2c8763e09ae04d5f"
+
+[gtk]
+version = "v1.0.1"
+url = "https://github.com/Fausto-Korpsvart/Catppuccin-GTK-Theme/releases/download/v1.0.1/Catppuccin-Macchiato.tar.xz"
+sha256 = "1c924b33a95f7a27cb2cbdddbbd483977455719bb3a27889f9ed7b08bd3ec8e9"
+directory = "Catppuccin-Macchiato-Blue-Dark"
+alias = "Catppuccin-Dark-Macchiato-BL-LB"
+
+[shell.oh-my-zsh]
+url = "https://github.com/ohmyzsh/ohmyzsh"
+revision = "c0140703a53eb0d22be44f7bac318d0baacc927c"
+[shell.zsh-autosuggestions]
+url = "https://github.com/zsh-users/zsh-autosuggestions"
+revision = "e52ee8ca55bcc56a17c828767a3f98f22a68d4eb"
+[shell.zsh-syntax-highlighting]
+url = "https://github.com/zsh-users/zsh-syntax-highlighting"
+revision = "db085e4661f6aafd24e5acb5b2e17e4dd5dddf3e"

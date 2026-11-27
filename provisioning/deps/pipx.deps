@@ -1,0 +1,4 @@
+mypy==2.4.1 # static Python type analysis
+ruff==0.17.6 # Python linting and formatting
+pre-commit==4.7.0 # repository hooks
+smokeshow==0.5.0 # publish HTML coverage reports

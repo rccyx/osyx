@@ -138,7 +138,8 @@ jobs:
         .github/workflows/ci.yml
         .github/workflows/on-workflow-call-bootstrap.yml
         .github/workflows/on-workflow-call-changes.yml
-      ignore_docs: true
+        .github/workflows/scripts/bootstrap-test.sh
+      ignore_docs: false
 
   bootstrap:
     needs: bootstrap-changes
