@@ -40,6 +40,7 @@ def get(url: str, file: Path) -> None:
     run(
         [
             "curl",
+            "--disable",
             "--fail",
             "--silent",
             "--show-error",
