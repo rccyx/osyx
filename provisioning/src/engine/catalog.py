@@ -128,6 +128,7 @@ def catalog(root: Path) -> Catalog:
         }.get(name, ())
         result.resources[key] = Resource("release", required)
     result.resources["gh"] = Resource("release")
+    result.resources["yazi"] = Resource("release", ("file",))
     for name in result.cargo:
         required = ("runtimes", "build-essential", "pkgconf")
         if name == "swww":
@@ -154,13 +155,14 @@ def catalog(root: Path) -> Catalog:
             "terminal": ("apt-terminal", "login-shell", "shell"),
             "appearance": ("apt-appearance", "fonts", "gtk"),
             "development": ("apt-development", "gh"),
+            
             "login": ("apt-login",),
             "runtimes": tuple(f"runtime-{name}" for name in runtime_order),
             "cargo-tools": ("apt-recorder", "apt-wallpaper", *result.cargo),
             "pipx-tools": tuple(result.pipx),
             "pnpm-tools": tuple(result.pnpm),
             "enablers": ("apt-enablers", *result.enablers),
-            "workstation": (
+           "workstation": (
                 "home",
                 "system",
                 "networking",
@@ -171,9 +173,9 @@ def catalog(root: Path) -> Catalog:
                 "development",
                 "login",
                 "runtimes",
-                "cargo-tools",
                 "pipx-tools",
                 "pnpm-tools",
+                "cargo-tools",
                 "enablers",
             ),
         }

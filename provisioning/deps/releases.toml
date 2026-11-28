@@ -5,6 +5,15 @@ sha256 = "7226736c2339719cda28fbf3a54d71aa63bcefe376e98cef00034268dab24840"
 directory = "go"
 commands = { "go" = "bin/go", "gofmt" = "bin/gofmt" }
 
+
+[yazi]
+# Terminal file manager and its companion CLI.
+version = "26.9.1"
+url = "https://github.com/sxyazi/yazi/releases/download/v26.9.1/yazi-x86_64-unknown-linux-musl.zip"
+sha256 = "9b9c39decccf8cb0ff53a7d637d38f8a79d93bbd0099f4ea9c619ef6bb392f5d"
+directory = "yazi-x86_64-unknown-linux-musl"
+commands = { yazi = "yazi", ya = "ya" }
+
 [node]
 version = "26.13.1"
 url = "https://nodejs.org/dist/v26.13.1/node-v26.13.1-linux-x64.tar.xz"

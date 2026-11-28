@@ -238,6 +238,7 @@ class Installer:
             "uv": ["uv", "--version"],
             "python": ["python3.15", "--version"],
             "rust": ["rustc", "--version"],
+            "yazi": ["yazi", "--version"],
             "gh": ["gh", "--version"],
         }.get(self.name)
         if cli is None or not version:
