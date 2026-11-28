@@ -1,3 +1,5 @@
+import base64
+import hashlib
 import subprocess
 from pathlib import Path
 
@@ -24,25 +26,27 @@ class Network:
         if self._competing():
             print("preserve existing network manager and DNS configuration")
             return
-        self.plan()
-        for name, image in self._images().items():
+        images = self._images()
+        for name, image in images.items():
             current = read_image(self.files.path(name))
             if (
                 current is not None
                 and not self._matches(name, image)
                 and name not in self.files.changes()
+                and not self._packaged_default(name, current)
             ):
-                if name != "etc/resolv.conf":
-                    raise ProvisionError(
-                        ErrorTag.CONFLICT, f"existing network configuration: {name}"
-                    )
-        for name, image in self._images().items():
+                raise ProvisionError(
+                    ErrorTag.CONFLICT, f"existing network configuration: {name}"
+                )
+        for name, image in images.items():
             if not self._matches(name, image):
                 self.files.install(name, image)
+                print(f"apply {name}")
         self.files.receipt.values["completed"] = True
         self.files.receipt.save()
-        if Path("/run/systemd/system").exists():
+        if self._live():
             run(["systemctl", "daemon-reload"])
+        print("configured iwd and networkd for the next boot")
 
     def doctor(self) -> None:
         if self._competing():
@@ -56,9 +60,22 @@ class Network:
         # avoid stopping live network services or cutting off a remote session
         self.files.reset()
         self.files.receipt.clear()
-        if Path("/run/systemd/system").exists():
+        if self._live():
             run(["systemctl", "daemon-reload"])
         print("network configuration restored; reboot when safe")
+
+    def _packaged_default(self, name: str, current: Image) -> bool:
+        if name != "etc/iwd/main.conf" or current["kind"] != "file":
+            return False
+        conffiles = run(
+            ["dpkg-query", f"--root={self.files.root}", "-W", "-f=${Conffiles}", "iwd"],
+            capture=True,
+        )
+        digest = hashlib.md5(base64.b64decode(current["value"]), usedforsecurity=False).hexdigest()
+        return any(line.split() == [f"/{name}", digest] for line in conffiles.splitlines())
+
+    def _live(self) -> bool:
+        return self.files.root == Path("/") and Path("/run/systemd/system").exists()
 
     def _matches(self, name: str, image: Image) -> bool:
         path = self.files.path(name)
@@ -70,7 +87,7 @@ class Network:
         return False
 
     def _competing(self) -> bool:
-        if not Path("/run/systemd/system").exists():
+        if not self._live():
             return False
         for unit in (
             "NetworkManager.service",
