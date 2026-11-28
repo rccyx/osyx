@@ -1,4 +1,3 @@
 typescript==7.0.2 # TypeScript compiler and language tools
-tsx==4.23.15 # execute TypeScript scripts
 eslint==10.15.0 # JavaScript and TypeScript linting
 prettier==3.10.1 # format code and configuration
