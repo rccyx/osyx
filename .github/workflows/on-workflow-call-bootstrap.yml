@@ -18,6 +18,16 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: verify test checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          test_file=provisioning/tests/test_provisioning.py
+          if ! git ls-files --error-unmatch -- "$test_file" >/dev/null 2>&1 || ! test -f "$test_file"; then
+            echo "::error file=$test_file::Missing provisioning test suite. Commit the test file before running bootstrap CI."
+            exit 1
+          fi
+
       - name: build Debian fixture
         run: |
           docker build --pull \
