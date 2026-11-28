@@ -1,0 +1,15 @@
+xwayland # run legacy X11 clients in Hyprland
+polkitd # privileged desktop authorization
+pkexec # request authenticated privileged operations
+lxqt-policykit # graphical authentication agent
+xdg-desktop-portal # desktop portal frontend
+xdg-desktop-portal-gtk # file chooser and GTK fallback portal
+desktop-file-utils # desktop application entry helpers
+libgl1-mesa-dri # Mesa OpenGL rendering drivers
+mesa-vulkan-drivers # Mesa Vulkan drivers
+mako-notifier # Wayland notification daemon
+libnotify-bin # notify-send for enablers and desktop actions
+brightnessctl # keyboard and display brightness controls
+ffmpeg # multimedia processing and recording previews
+mpv # media playback and recording review
+nautilus # graphical file manager

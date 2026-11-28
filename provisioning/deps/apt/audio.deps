@@ -1,0 +1,8 @@
+pipewire # desktop audio and video graph
+pipewire-alsa # route ALSA applications through PipeWire
+pipewire-pulse # PulseAudio compatibility for applications and pactl
+wireplumber # PipeWire session and device routing policy
+libspa-0.2-bluetooth # Bluetooth audio integration
+alsa-utils # ALSA hardware controls, including Vocaster
+pulseaudio-utils # pactl audio status and control
+playerctl # MPRIS media key controls

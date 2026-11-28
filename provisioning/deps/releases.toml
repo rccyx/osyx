@@ -1,0 +1,53 @@
+[go]
+version = "1.27.4"
+url = "https://go.dev/dl/go1.27.4.linux-amd64.tar.gz"
+sha256 = "7226736c2339719cda28fbf3a54d71aa63bcefe376e98cef00034268dab24840"
+directory = "go"
+commands = { "go" = "bin/go", "gofmt" = "bin/gofmt" }
+
+
+[yazi]
+# Terminal file manager and its companion CLI.
+version = "26.9.1"
+url = "https://github.com/sxyazi/yazi/releases/download/v26.9.1/yazi-x86_64-unknown-linux-musl.zip"
+sha256 = "9b9c39decccf8cb0ff53a7d637d38f8a79d93bbd0099f4ea9c619ef6bb392f5d"
+directory = "yazi-x86_64-unknown-linux-musl"
+commands = { yazi = "yazi", ya = "ya" }
+
+[node]
+version = "26.13.1"
+url = "https://nodejs.org/dist/v26.13.1/node-v26.13.1-linux-x64.tar.xz"
+sha256 = "5c063e46bab0fbc1c17cc445d7ff129cbdcd0471be6ed83b6ab864f8143bc864"
+directory = "node-v26.13.1-linux-x64"
+commands = { "node" = "bin/node", "npm" = "bin/npm", "npx" = "bin/npx" }
+
+[pnpm]
+version = "12.23.0"
+url = "https://github.com/pnpm/pnpm/releases/download/v12.23.0/pnpm-linux-x64.tar.gz"
+sha256 = "b515e29f2ac1adc0fbe63173414a6682827baff24f17e7ad3476821bdef236ac"
+commands = { "pnpm" = "pnpm" }
+
+[uv]
+version = "0.13.10"
+url = "https://github.com/astral-sh/uv/releases/download/0.13.10/uv-x86_64-unknown-linux-gnu.tar.gz"
+sha256 = "bf65ac1a0af10f92c522d91ac096c7c0a39657647b155577e7836c2cbbb4526c"
+directory = "uv-x86_64-unknown-linux-gnu"
+commands = { "uv" = "uv", "uvx" = "uvx" }
+
+[python]
+version = "3.15.2"
+build = "20261124"
+commands = { "python3.15" = "bin/python3.15" }
+
+[rust]
+version = "1.100.0"
+url = "https://static.rust-lang.org/rustup/archive/1.29.3/x86_64-unknown-linux-gnu/rustup-init"
+sha256 = "b1c8cb14e30889e7e2999e6b69e62d9e9b9ffc0f4df8180564d306d9680e6c55"
+commands = { "cargo" = "cargo/bin/cargo", "rustc" = "cargo/bin/rustc", "rustup" = "cargo/bin/rustup" }
+
+[gh]
+version = "2.106.0"
+url = "https://github.com/cli/cli/releases/download/v2.106.0/gh_2.106.0_linux_amd64.tar.gz"
+sha256 = "a476449fa9625413c54a3734eded62e9e480e49f421ff08e7f3b3879c059a033"
+directory = "gh_2.106.0_linux_amd64"
+commands = { gh = "bin/gh" }

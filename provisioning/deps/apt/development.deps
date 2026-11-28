@@ -1,0 +1,17 @@
+build-essential # compiler, linker and make for native packages
+pkgconf # locate system build libraries
+cmake # configure native build projects
+ninja-build # fast native build executor
+meson # configure Meson-based projects
+clang # C frontend for native builds and bindgen
+libclang-dev # Clang library for Rust FFI code generation
+shellcheck # shell static analysis
+bats # shell integration tests
+direnv # per-project environment loading
+strace # system-call tracing
+lsof # inspect open files and sockets
+wev # inspect Wayland keyboard and pointer events
+pipx # isolate Python command-line applications
+python3-jinja2 # render OSYX flavor templates using Debian Python
+libatomic1 # atomic operations required by upstream Node builds
+libdbus-1-dev # D-Bus FFI and development interfaces for Rust Bluetooth and Wi-Fi tools

@@ -1,0 +1,21 @@
+[battery]
+requires = ["upower", "libnotify-bin"]
+timer = "battery-notify.timer"
+files = { ".local/bin/battery-notify" = "battery-notify", ".config/systemd/user/battery-notify.service" = "battery-notify.service", ".config/systemd/user/battery-notify.timer" = "battery-notify.timer" }
+
+[heat]
+requires = ["lm-sensors", "libnotify-bin"]
+timer = "heat-notify.timer"
+files = { ".local/bin/heat-notify" = "heat-notify", ".local/bin/cpu-temp" = "cpu-temp", ".config/systemd/user/heat-notify.service" = "heat-notify.service", ".config/systemd/user/heat-notify.timer" = "heat-notify.timer" }
+
+[screenshots]
+requires = ["grim", "slurp", "swappy", "wl-clipboard-rs-tools", "libnotify-bin"]
+files = { ".local/bin/shot-full" = "shot", ".local/bin/shot-mac" = "shot", ".local/bin/shot-prune-month" = "shot-prune-month" }
+
+[screenshare]
+requires = ["xdg-desktop-portal", "xdg-desktop-portal-gtk", "pipewire", "wireplumber"]
+files = { ".config/xdg-desktop-portal/hyprland-portals.conf" = "hyprland-portals.conf" }
+
+[vocaster]
+requires = ["alsa-utils"]
+files = { ".local/bin/vocaster" = "vocaster" }

@@ -35,7 +35,7 @@ jobs:
 
     steps:
       - name: checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
 
@@ -63,58 +63,53 @@ jobs:
           mapfile -t watched <<< "${PATHS:-$DIRECTORY}"
 
           base=""
-          head=""
+          head="$CURRENT_SHA"
 
-          case "${EVENT_NAME}" in
+          case "$EVENT_NAME" in
             pull_request)
-              head="${PR_HEAD_SHA}"
+              head="$PR_HEAD_SHA"
 
-              if [[ "${EVENT_ACTION}" == "synchronize" ]]; then
-                if [[ -n "${EVENT_BEFORE}" && ! "${EVENT_BEFORE}" =~ ^0+$ ]]; then
-                  base="${EVENT_BEFORE}"
-                elif git rev-parse "${head}^" >/dev/null 2>&1; then
-                  base="$(git rev-parse "${head}^")"
-                fi
+              if [[ "$EVENT_ACTION" == synchronize && -n "$EVENT_BEFORE" && ! "$EVENT_BEFORE" =~ ^0+$ ]]; then
+                base="$EVENT_BEFORE"
               else
-                base="${PR_BASE_SHA}"
+                if ! base="$(git merge-base "$PR_BASE_SHA" "$head")"; then
+                  echo 'changed=true' >>"$GITHUB_OUTPUT"
+                  exit 0
+                fi
               fi
               ;;
 
             push)
-              head="${EVENT_AFTER:-${CURRENT_SHA}}"
-
-              if [[ -n "${EVENT_BEFORE}" && ! "${EVENT_BEFORE}" =~ ^0+$ ]]; then
-                base="${EVENT_BEFORE}"
+              head="${EVENT_AFTER:-$CURRENT_SHA}"
+              if [[ -n "$EVENT_BEFORE" && ! "$EVENT_BEFORE" =~ ^0+$ ]]; then
+                base="$EVENT_BEFORE"
               fi
               ;;
 
             *)
-              head="${CURRENT_SHA}"
-
-              if git rev-parse "${head}^" >/dev/null 2>&1; then
-                base="$(git rev-parse "${head}^")"
+              if git rev-parse "$head^" >/dev/null 2>&1; then
+                base="$(git rev-parse "$head^")"
               fi
               ;;
           esac
 
-          if [[ -n "${base}" ]]; then
-            mapfile -t changed_files < <(
-              git diff \
-                --name-only \
-                --diff-filter=ACDMRTUXB \
-                "${base}" \
-                "${head}"
-            )
-          else
-            mapfile -t changed_files < <(
-              git diff-tree \
-                --root \
-                --no-commit-id \
-                --name-only \
-                -r \
-                "${head}"
-            )
+          # a force-push can leave the previous commit unreachable
+          if [[ -n "$base" ]] && ! git cat-file -e "$base^{commit}" 2>/dev/null; then
+            echo 'changed=true' >>"$GITHUB_OUTPUT"
+            exit 0
           fi
+
+          changed_paths="$(mktemp)"
+          trap 'rm -f "$changed_paths"' EXIT
+
+          if [[ -n "$base" ]]; then
+            # inspect both sides of moves and propagate git failures
+            git diff --no-renames --name-only -z "$base" "$head" >"$changed_paths"
+          else
+            git ls-tree -r --name-only -z "$head" >"$changed_paths"
+          fi
+
+          mapfile -d '' -t changed_files <"$changed_paths"
 
           changed=false
 

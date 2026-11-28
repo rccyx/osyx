@@ -1,0 +1,3 @@
+liblz4-dev # compression library for animated wallpapers
+libwayland-dev # native Wayland development interfaces
+wayland-protocols # Wayland protocol descriptions used by builds

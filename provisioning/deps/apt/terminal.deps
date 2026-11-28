@@ -1,0 +1,15 @@
+zsh # interactive OSYX shell
+tmux # terminal multiplexer
+kitty # GPU-accelerated terminal
+neovim # primary text editor
+fzf # fuzzy selection in shell workflows
+ripgrep # fast source search
+fd-find # file discovery
+bat # syntax-highlighted file viewing
+jq # JSON manipulation for desktop scripts
+tree # inspect directory hierarchy
+btop # resource monitor
+less # terminal pager
+bc # shell arithmetic
+man-db # manual page viewer
+manpages # system manual pages

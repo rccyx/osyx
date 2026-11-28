@@ -1,0 +1,14 @@
+iwd # Wi-Fi authentication and association
+iw # inspect wireless interfaces
+iproute2 # configure kernel network interfaces and routes
+rfkill # inspect and toggle wireless radios
+wireless-regdb # transmit only on permitted wireless frequencies
+systemd-resolved # local DNS resolver and per-link DNS
+openssh-client # remote shells and Git over SSH
+iputils-ping # connectivity checks
+bind9-dnsutils # DNS queries and diagnostics
+traceroute # network path diagnostics
+qrencode # Wi-Fi sharing QR codes
+wireguard-tools # WireGuard VPN configuration
+nftables # configure kernel packet filtering
+bluez # system Bluetooth daemon and protocol stack

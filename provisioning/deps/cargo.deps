@@ -1,0 +1,9 @@
+dua-cli==3.0.3 # disk usage analysis
+just==1.59.0 # run repository task recipes
+lsd==1.2.0 # terminal directory listing
+starship==1.27.0 # OSYX shell prompt
+wl-clipboard-rs-tools==0.9.5 # Wayland clipboard command-line tools
+bluetui==0.8.0 # Bluetooth terminal interface on top of BlueZ
+impala==0.8.1 # Wi-Fi terminal interface on top of iwd
+swww@git:a2864804e48533f4c70c63930d8cb24b394288ec # animated Wayland wallpaper daemon
+wl-screenrec@git:6edf054322b8652b66bd6daf4b9b0ebadedd5574 # GPU-accelerated Wayland recording

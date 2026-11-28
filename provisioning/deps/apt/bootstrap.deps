@@ -1,0 +1,5 @@
+sudo # authenticated privilege escalation for the workstation account
+git # fetch and inspect the OSYX checkout
+python3 # Debian-owned interpreter for the provisioner
+curl # HTTPS artifact downloads
+ca-certificates # system TLS trust store

@@ -1,0 +1,3 @@
+sddm # graphical login manager used by the OSYX login theme
+fprintd # fingerprint enrollment and identification daemon
+libpam-fprintd # optional fingerprint PAM integration

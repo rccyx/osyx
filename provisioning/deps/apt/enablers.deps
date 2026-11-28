@@ -1,0 +1,5 @@
+upower # battery status and percentage
+lm-sensors # hardware temperature readings
+grim # Wayland screenshot capture
+slurp # interactive capture region selection
+swappy # annotate screenshot images

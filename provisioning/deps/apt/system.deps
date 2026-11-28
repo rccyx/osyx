@@ -1,0 +1,16 @@
+gnupg # verify signatures and sign Git commits
+locales # generate the configured UTF-8 locale
+tzdata # timezone database
+dbus-user-session # desktop user message bus
+systemd-timesyncd # synchronize the system clock
+xdg-user-dirs # standard home directories
+xdg-utils # open files and URLs in preferred applications
+file # identify file formats
+wget # download files from shell workflows
+rsync # synchronize file trees
+unzip # extract ZIP archives
+xz-utils # extract XZ archives
+zstd # extract Zstandard archives
+bzip2 # extract bzip2 archives
+pciutils # inspect PCI devices
+usbutils # inspect USB devices

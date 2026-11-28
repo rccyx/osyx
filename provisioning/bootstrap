@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+[[ $EUID -eq 0 ]] || { echo 'run bootstrap as root' >&2; exit 1; }
+if [[ "${1:-}" == --help || "${1:-}" == -h ]]; then
+    echo 'usage: provisioning/bootstrap --user USER [--locale LOCALE] [--timezone ZONE] [--yes] [--firmware-intel]'
+    exit 0
+fi
+user="${SUDO_USER:-}"
+yes=false
+args=("$@")
+for ((i=0; i<${#args[@]}; i++)); do
+    case "${args[i]}" in
+        --user)
+            ((i+=1))
+            user="${args[i]:-}"
+            ;;
+        --user=*) user="${args[i]#--user=}" ;;
+        --yes) yes=true ;;
+        --locale|--timezone)
+            ((i+1 < ${#args[@]})) || { echo "missing value for ${args[i]}" >&2; exit 2; }
+            ((i+=1))
+            ;;
+        --locale=*|--timezone=*|--replace-home|--firmware-intel) ;;
+        *) printf 'unknown bootstrap option: %s\n' "${args[i]}" >&2; exit 2 ;;
+    esac
+done
+[[ -n "$user" && "$user" != root && "$(id -u "$user" 2>/dev/null)" != 0 ]] && getent passwd "$user" >/dev/null || {
+    echo 'create a non-root account and specify --user USER' >&2
+    exit 2
+}
+[[ -t 0 || "$yes" == true ]] || { echo 'noninteractive bootstrap requires --yes' >&2; exit 2; }
+[[ -f /etc/os-release ]] && grep -qx 'VERSION_CODENAME=trixie' /etc/os-release || { echo 'Debian 13 (Trixie) required' >&2; exit 2; }
+[[ "$(dpkg --print-architecture)" == amd64 ]] || { echo 'amd64 required' >&2; exit 2; }
+mapfile -t packages < <(awk -F '#' '{gsub(/^[ \t]+|[ \t]+$/, "", $1); if ($1 != "") print $1}' "$root/deps/apt/bootstrap.deps")
+apt-get update
+apt-get install -y --no-install-recommends --no-remove "${packages[@]}"
+exec "$root/main" apply workstation "$@"
